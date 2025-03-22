@@ -1,5 +1,5 @@
 
-import { Excavator, Truck, ChevronRight, Construction, Hammer, Package, Wrench } from "lucide-react";
+import { Tractor, Truck, ChevronRight, Construction, Hammer, Package, Wrench } from "lucide-react";
 import CategoryButton from "./CategoryButton";
 import EquipmentCard from "./EquipmentCard";
 import SearchBar from "./SearchBar";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 const EquipmentGrid = () => {
   const categories = [
-    { icon: <Excavator className="h-6 w-6" />, label: "Pelleteuses" },
+    { icon: <Tractor className="h-6 w-6" />, label: "Pelleteuses" },
     { icon: <Truck className="h-6 w-6" />, label: "Camions" },
     { icon: <Construction className="h-6 w-6" />, label: "Échafaudages" },
     { icon: <Hammer className="h-6 w-6" />, label: "Marteaux piqueurs" },
