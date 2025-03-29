@@ -1,5 +1,6 @@
 
 import { Tractor, Truck, ChevronRight, Construction, Hammer, Package, Wrench } from "lucide-react";
+import { Link } from "react-router-dom";
 import CategoryButton from "./CategoryButton";
 import EquipmentCard from "./EquipmentCard";
 import SearchBar from "./SearchBar";
@@ -96,18 +97,21 @@ const EquipmentGrid = () => {
       <div className="mb-12 animate-fade-up" style={{ animationDelay: "200ms" }}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold">Catégories populaires</h3>
-          <Button variant="ghost" className="text-primary flex items-center gap-1">
-            Voir tout <ChevronRight className="h-4 w-4" />
+          <Button variant="ghost" className="text-primary flex items-center gap-1" asChild>
+            <Link to="/equipment">
+              Voir tout <ChevronRight className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {categories.map((category, index) => (
-            <CategoryButton
-              key={index}
-              icon={category.icon}
-              label={category.label}
-              isActive={index === 0}
-            />
+            <Link to={`/equipment`} key={index}>
+              <CategoryButton
+                icon={category.icon}
+                label={category.label}
+                isActive={index === 0}
+              />
+            </Link>
           ))}
         </div>
       </div>
@@ -115,8 +119,10 @@ const EquipmentGrid = () => {
       <div className="animate-fade-up" style={{ animationDelay: "300ms" }}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold">Équipements récents</h3>
-          <Button variant="ghost" className="text-primary flex items-center gap-1">
-            Voir tout <ChevronRight className="h-4 w-4" />
+          <Button variant="ghost" className="text-primary flex items-center gap-1" asChild>
+            <Link to="/equipment">
+              Voir tout <ChevronRight className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -125,9 +131,11 @@ const EquipmentGrid = () => {
           ))}
         </div>
         <div className="mt-10 text-center">
-          <Button size="lg" className="button-premium">
-            Explorer plus d'équipements
-            <ChevronRight className="ml-2 h-4 w-4" />
+          <Button size="lg" className="button-premium" asChild>
+            <Link to="/equipment">
+              Explorer plus d'équipements
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </div>

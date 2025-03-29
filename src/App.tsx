@@ -5,6 +5,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Equipment from "./pages/Equipment";
+import HowItWorks from "./pages/HowItWorks";
+import Pricing from "./pages/Pricing";
+import Contact from "./pages/Contact";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -17,12 +22,11 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* Additional routes will be added as we develop more pages */}
-          <Route path="/equipment" element={<NotFound />} />
-          <Route path="/how-it-works" element={<NotFound />} />
-          <Route path="/pricing" element={<NotFound />} />
-          <Route path="/contact" element={<NotFound />} />
-          <Route path="/about" element={<NotFound />} />
+          <Route path="/equipment" element={<Equipment />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
           <Route path="/privacy" element={<NotFound />} />
           <Route path="/terms" element={<NotFound />} />
           <Route path="/cookies" element={<NotFound />} />
