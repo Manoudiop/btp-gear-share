@@ -1,6 +1,7 @@
 
 import { Shield, Truck, Watch, MessageSquare, CalendarCheck, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import FeatureCard from "@/components/FeatureCard";
@@ -79,11 +80,11 @@ const Index = () => {
                 Rejoignez notre communauté de professionnels du BTP et transformez la façon dont vous gérez vos équipements de chantier.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="button-premium">
-                  Trouver du matériel
+                <Button size="lg" className="button-premium" asChild>
+                  <Link to="/equipment">Trouver du matériel</Link>
                 </Button>
-                <Button variant="outline" size="lg" className="button-outline">
-                  Devenir loueur
+                <Button variant="outline" size="lg" className="button-outline" asChild>
+                  <Link to="/become-owner">Devenir loueur</Link>
                 </Button>
               </div>
             </div>

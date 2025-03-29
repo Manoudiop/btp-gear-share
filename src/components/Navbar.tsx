@@ -71,6 +71,9 @@ const Navbar = () => {
             <User className="h-4 w-4 mr-2" />
             Connexion
           </Button>
+          <Button variant="outline" size="sm" className="rounded-full" asChild>
+            <Link to="/become-owner">Devenir loueur</Link>
+          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -113,6 +116,11 @@ const Navbar = () => {
               <Button className="w-full justify-start rounded-full">
                 <User className="h-4 w-4 mr-2" />
                 Connexion
+              </Button>
+              <Button variant="outline" className="w-full justify-start rounded-full" asChild>
+                <Link to="/become-owner" onClick={() => setMobileMenuOpen(false)}>
+                  Devenir loueur
+                </Link>
               </Button>
             </div>
           </div>
