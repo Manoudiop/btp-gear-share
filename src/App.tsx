@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import BecomeOwner from "./pages/BecomeOwner";
 import CustomQuote from "./pages/CustomQuote";
+import Materials from "./pages/Materials";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/become-owner" element={<BecomeOwner />} />
           <Route path="/custom-quote" element={<CustomQuote />} />
+          <Route path="/materials" element={<Materials />} />
           <Route path="/privacy" element={<NotFound />} />
           <Route path="/terms" element={<NotFound />} />
           <Route path="/cookies" element={<NotFound />} />

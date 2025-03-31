@@ -1,9 +1,10 @@
-
 import { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
-import { Menu, X, Search, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X, ChevronDown, Building, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import Logo from "./Logo";
+import useMobile from "@/hooks/use-mobile";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -19,12 +20,14 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Accueil", href: "/" },
-    { name: "Matériel", href: "/equipment" },
-    { name: "Comment ça marche", href: "/how-it-works" },
-    { name: "Tarifs", href: "/pricing" },
-    { name: "Contact", href: "/contact" },
+  const navItems = [
+    { label: "Accueil", path: "/" },
+    { label: "Équipement", path: "/equipment" },
+    { label: "Matériaux", path: "/materials" },
+    { label: "Comment ça marche", path: "/how-it-works" },
+    { label: "Tarifs", path: "/pricing" },
+    { label: "À propos", path: "/about" },
+    { label: "Contact", path: "/contact" },
   ];
 
   return (
@@ -45,18 +48,18 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          {navLinks.map((link) => (
+          {navItems.map((item) => (
             <Link
-              key={link.name}
-              to={link.href}
+              key={item.label}
+              to={item.path}
               className={cn(
                 "text-sm font-medium transition-colors duration-200",
-                location.pathname === link.href
+                location.pathname === item.path
                   ? "text-primary"
                   : "text-foreground/80 hover:text-foreground"
               )}
             >
-              {link.name}
+              {item.label}
             </Link>
           ))}
         </nav>
@@ -93,19 +96,19 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-background border-b border-border animate-fade-in">
           <div className="px-4 py-6 space-y-4">
-            {navLinks.map((link) => (
+            {navItems.map((item) => (
               <Link
-                key={link.name}
-                to={link.href}
+                key={item.label}
+                to={item.path}
                 className={cn(
                   "block py-2 text-base font-medium",
-                  location.pathname === link.href
+                  location.pathname === item.path
                     ? "text-primary"
                     : "text-foreground/80"
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {link.name}
+                {item.label}
               </Link>
             ))}
             <div className="pt-4 space-y-3">
