@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Menu, 
   X, 
@@ -8,16 +8,29 @@ import {
   Building, 
   Box, 
   Search,
-  User 
+  User,
+  LogOut,
+  Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +40,11 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const navItems = [
     { label: "Accueil", path: "/" },
@@ -76,10 +94,46 @@ const Navbar = () => {
             <Search className="h-4 w-4 mr-2" />
             Rechercher
           </Button>
-          <Button className="rounded-full">
-            <User className="h-4 w-4 mr-2" />
-            Connexion
-          </Button>
+          
+          {isAuthenticated ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="rounded-full">
+                  <User className="h-4 w-4 mr-2" />
+                  {user?.name}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/account" className="cursor-pointer w-full">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Tableau de bord</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/account/settings" className="cursor-pointer w-full">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Paramètres</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Se déconnecter</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button className="rounded-full" asChild>
+              <Link to="/login">
+                <User className="h-4 w-4 mr-2" />
+                Connexion
+              </Link>
+            </Button>
+          )}
+          
           <Button variant="outline" size="sm" className="rounded-full" asChild>
             <Link to="/become-owner">Devenir loueur</Link>
           </Button>
@@ -122,10 +176,42 @@ const Navbar = () => {
                 <Search className="h-4 w-4 mr-2" />
                 Rechercher
               </Button>
-              <Button className="w-full justify-start rounded-full">
-                <User className="h-4 w-4 mr-2" />
-                Connexion
-              </Button>
+              
+              {isAuthenticated ? (
+                <>
+                  <Button 
+                    className="w-full justify-start rounded-full"
+                    asChild
+                  >
+                    <Link to="/account" onClick={() => setMobileMenuOpen(false)}>
+                      <User className="h-4 w-4 mr-2" />
+                      Mon compte
+                    </Link>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start rounded-full text-destructive"
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Se déconnecter
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  className="w-full justify-start rounded-full"
+                  asChild
+                >
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <User className="h-4 w-4 mr-2" />
+                    Connexion
+                  </Link>
+                </Button>
+              )}
+              
               <Button variant="outline" className="w-full justify-start rounded-full" asChild>
                 <Link to="/become-owner" onClick={() => setMobileMenuOpen(false)}>
                   Devenir loueur
