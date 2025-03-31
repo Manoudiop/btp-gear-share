@@ -1,5 +1,5 @@
 
-import { Sand, Package, Shovel, Boxes, Box, ShoppingCart, ChevronRight, Filter } from "lucide-react";
+import { Package, Shovel, Boxes, Box, ShoppingCart, ChevronRight, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CategoryButton from "./CategoryButton";
@@ -8,7 +8,7 @@ import SearchBar from "./SearchBar";
 
 const MaterialsGrid = () => {
   const categories = [
-    { icon: <Sand className="h-6 w-6" />, label: "Sable" },
+    { icon: <Box className="h-6 w-6" />, label: "Sable" },
     { icon: <Package className="h-6 w-6" />, label: "Ciment" },
     { icon: <Box className="h-6 w-6" />, label: "Béton" },
     { icon: <Boxes className="h-6 w-6" />, label: "Agrégats" },
@@ -97,7 +97,7 @@ const MaterialsGrid = () => {
       </div>
 
       <div className="mb-12 animate-fade-up" style={{ animationDelay: "100ms" }}>
-        <SearchBar placeholder="Rechercher des matériaux..." />
+        <SearchBar />
       </div>
 
       <div className="mb-12 animate-fade-up" style={{ animationDelay: "200ms" }}>

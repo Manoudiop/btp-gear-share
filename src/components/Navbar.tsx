@@ -1,10 +1,18 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Building, Box } from "lucide-react";
+import { 
+  Menu, 
+  X, 
+  ChevronDown, 
+  Building, 
+  Box, 
+  Search,
+  User 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
-import useMobile from "@/hooks/use-mobile";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -41,9 +49,7 @@ const Navbar = () => {
     >
       <div className="flex items-center justify-between mx-auto max-w-7xl">
         <div className="flex items-center">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            BTP<span className="text-foreground">Location</span>
-          </Link>
+          <Logo />
         </div>
 
         {/* Desktop Navigation */}
