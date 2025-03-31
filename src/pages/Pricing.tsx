@@ -2,8 +2,11 @@
 import { Check, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link, useNavigate } from "react-router-dom";
 
 const Pricing = () => {
+  const navigate = useNavigate();
+  
   const pricingPlans = [
     {
       name: "Basique",
@@ -202,7 +205,10 @@ const Pricing = () => {
               <p className="text-muted-foreground mb-6">
                 Contactez notre équipe commerciale pour discuter de vos besoins spécifiques et obtenir une tarification personnalisée pour votre entreprise.
               </p>
-              <Button className="button-premium">
+              <Button 
+                className="button-premium"
+                onClick={() => navigate("/custom-quote")}
+              >
                 Demander un devis personnalisé
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
