@@ -1,6 +1,6 @@
 
-import { CalendarDays, Building, CreditCard, Percent, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CalendarDays, Building, CreditCard, Percent, TrendingUp, Package, Plus, Settings, ChartBarIcon } from "lucide-react";
 import AccountLayout from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,7 +76,7 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
                 </div>
-                <Link to="/account/rentals/1">
+                <Link to="/account/rentals">
                   <Button variant="outline" size="sm">Détails</Button>
                 </Link>
               </div>
@@ -94,7 +94,7 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
                 </div>
-                <Link to="/account/rentals/2">
+                <Link to="/account/rentals">
                   <Button variant="outline" size="sm">Détails</Button>
                 </Link>
               </div>
@@ -106,7 +106,7 @@ const OwnerDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-lg font-medium">Revenus mensuels</span>
-              <Link to="/account/income">
+              <Link to="/account/stats">
                 <Button variant="link" size="sm" className="p-0 h-auto">
                   Voir tout
                 </Button>
@@ -137,17 +137,26 @@ const OwnerDashboard = () => {
           <div className="flex flex-wrap gap-4">
             <Link to="/account/equipment/add">
               <Button>
+                <Plus className="mr-2 h-4 w-4" />
                 Ajouter un équipement
+              </Button>
+            </Link>
+            <Link to="/account/equipment">
+              <Button variant="outline">
+                <Package className="mr-2 h-4 w-4" />
+                Gérer mes équipements
+              </Button>
+            </Link>
+            <Link to="/account/stats">
+              <Button variant="outline">
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Voir mes statistiques
               </Button>
             </Link>
             <Link to="/account/settings">
               <Button variant="outline">
+                <Settings className="mr-2 h-4 w-4" />
                 Gérer mon profil
-              </Button>
-            </Link>
-            <Link to="/account/income">
-              <Button variant="outline">
-                Consulter mes paiements
               </Button>
             </Link>
           </div>

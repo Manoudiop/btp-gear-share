@@ -29,6 +29,16 @@ import ForgotPassword from "./pages/ForgotPassword";
 // Account Pages
 import Dashboard from "./pages/account/Dashboard";
 
+// Owner Dashboard Pages
+import EquipmentList from "./pages/account/owner/EquipmentList";
+import AddEquipment from "./pages/account/owner/AddEquipment";
+import Stats from "./pages/account/owner/Stats";
+import ActiveRentals from "./pages/account/owner/ActiveRentals";
+
+// Admin Dashboard Pages
+import UserManagement from "./pages/account/admin/UserManagement";
+import ManageEquipment from "./pages/account/admin/ManageEquipment";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -62,12 +72,16 @@ const App = () => (
             
             {/* Admin-only routes */}
             <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
-              {/* Add admin-specific routes here */}
+              <Route path="/account/users" element={<UserManagement />} />
+              <Route path="/account/admin/equipment" element={<ManageEquipment />} />
             </Route>
             
             {/* Owner-only routes */}
             <Route element={<PrivateRoute allowedRoles={["owner"]} />}>
-              {/* Add owner-specific routes here */}
+              <Route path="/account/equipment" element={<EquipmentList />} />
+              <Route path="/account/equipment/add" element={<AddEquipment />} />
+              <Route path="/account/stats" element={<Stats />} />
+              <Route path="/account/rentals" element={<ActiveRentals />} />
             </Route>
             
             {/* Client-only routes */}

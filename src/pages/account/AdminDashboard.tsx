@@ -1,6 +1,6 @@
 
-import { Users, Package, Briefcase, CreditCard, PieChart, BarChart } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Users, Package, Briefcase, CreditCard, PieChart, BarChart, UserCog, Settings, Building } from "lucide-react";
 import AccountLayout from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -120,17 +120,26 @@ const AdminDashboard = () => {
           <div className="flex flex-wrap gap-4">
             <Link to="/account/users">
               <Button>
+                <UserCog className="mr-2 h-4 w-4" />
                 Gérer les utilisateurs
               </Button>
             </Link>
-            <Link to="/account/equipment">
+            <Link to="/account/admin/equipment">
               <Button variant="outline">
+                <Building className="mr-2 h-4 w-4" />
                 Gérer les équipements
               </Button>
             </Link>
             <Link to="/account/materials">
               <Button variant="outline">
+                <Briefcase className="mr-2 h-4 w-4" />
                 Gérer les matériaux
+              </Button>
+            </Link>
+            <Link to="/account/settings">
+              <Button variant="outline">
+                <Settings className="mr-2 h-4 w-4" />
+                Paramètres
               </Button>
             </Link>
           </div>
