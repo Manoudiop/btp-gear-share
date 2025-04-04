@@ -10,13 +10,15 @@ import PrivateRoute from "./components/auth/PrivateRoute";
 // Pages
 import Index from "./pages/Index";
 import Equipment from "./pages/Equipment";
+import EquipmentDetails from "./pages/EquipmentDetails";
+import Materials from "./pages/Materials";
+import MaterialDetails from "./pages/MaterialDetails";
 import HowItWorks from "./pages/HowItWorks";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import BecomeOwner from "./pages/BecomeOwner";
 import CustomQuote from "./pages/CustomQuote";
-import Materials from "./pages/Materials";
 import NotFound from "./pages/NotFound";
 
 // Auth Pages
@@ -40,13 +42,15 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/equipment" element={<Equipment />} />
+            <Route path="/equipment/:id" element={<EquipmentDetails />} />
+            <Route path="/materials" element={<Materials />} />
+            <Route path="/material/:id" element={<MaterialDetails />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<About />} />
             <Route path="/become-owner" element={<BecomeOwner />} />
             <Route path="/custom-quote" element={<CustomQuote />} />
-            <Route path="/materials" element={<Materials />} />
             
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
