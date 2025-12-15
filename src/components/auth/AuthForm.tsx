@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Shield, Building, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useAuth } from "@/contexts/AuthContext";
 
 const loginSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -32,6 +33,7 @@ const registerSchema = loginSchema.extend({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 type RegisterFormData = z.infer<typeof registerSchema>;
+type UserRole = "admin" | "client" | "owner";
 
 interface AuthFormProps {
   type: "login" | "register";
@@ -41,8 +43,10 @@ interface AuthFormProps {
 const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRole>("client");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const isLogin = type === "login";
   const title = isLogin ? "Connexion" : "Inscription";
@@ -55,33 +59,35 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
       : { name: "", email: "", password: "", confirmPassword: "" },
   });
 
+  const roles: { value: UserRole; label: string; icon: React.ReactNode; description: string }[] = [
+    { value: "client", label: "Client", icon: <UserCircle className="h-5 w-5" />, description: "Louer du matériel" },
+    { value: "owner", label: "Loueur", icon: <Building className="h-5 w-5" />, description: "Proposer vos équipements" },
+    { value: "admin", label: "Administrateur", icon: <Shield className="h-5 w-5" />, description: "Gérer la plateforme" },
+  ];
+
   const onSubmit = (data: LoginFormData | RegisterFormData) => {
-    // Note: In a real app, you'd connect to a backend service here
-    console.log("Form submitted:", data);
+    console.log("Form submitted:", data, "Role:", selectedRole);
+    
+    const userData = {
+      id: `user-${Date.now()}`,
+      name: isLogin ? (selectedRole === "admin" ? "Admin" : selectedRole === "owner" ? "Propriétaire" : "Client") : (data as RegisterFormData).name,
+      email: data.email,
+      role: selectedRole,
+      isAuthenticated: true,
+    };
+
+    login(userData);
     
     toast({
       title: isLogin ? "Connexion réussie" : "Inscription réussie",
       description: isLogin 
-        ? "Bienvenue sur BTP Location." 
+        ? `Bienvenue ${userData.name} sur BTP Location.` 
         : "Votre compte a été créé avec succès.",
     });
 
-    // For demo purposes, we'll simulate a successful login/registration
-    // In a real implementation, you would check credentials with your backend
-    // and set authentication state
-    
-    localStorage.setItem("authUser", JSON.stringify({
-      id: "user-123",
-      name: isLogin ? "Utilisateur" : (data as RegisterFormData).name,
-      email: data.email,
-      role: "client", // Default role for new users
-      isAuthenticated: true,
-    }));
-
-    // Redirect the user
     setTimeout(() => {
       navigate(redirectTo);
-    }, 1000);
+    }, 500);
   };
 
   return (
@@ -210,6 +216,31 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
               </Link>
             </div>
           )}
+
+          {/* Role Selection for Demo */}
+          <div className="space-y-3">
+            <FormLabel>Type de compte (Demo)</FormLabel>
+            <div className="grid grid-cols-3 gap-2">
+              {roles.map((role) => (
+                <button
+                  key={role.value}
+                  type="button"
+                  onClick={() => setSelectedRole(role.value)}
+                  className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                    selectedRole === role.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  {role.icon}
+                  <span className="text-xs font-medium">{role.label}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              {roles.find(r => r.value === selectedRole)?.description}
+            </p>
+          </div>
           
           <Button type="submit" className="w-full mt-6">
             {isLogin ? "Se connecter" : "S'inscrire"}
