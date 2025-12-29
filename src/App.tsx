@@ -38,6 +38,15 @@ import ActiveRentals from "./pages/account/owner/ActiveRentals";
 // Admin Dashboard Pages
 import UserManagement from "./pages/account/admin/UserManagement";
 import ManageEquipment from "./pages/account/admin/ManageEquipment";
+import ManageMaterials from "./pages/account/admin/ManageMaterials";
+
+// Account Settings
+import AccountSettings from "./pages/account/AccountSettings";
+
+// Legal Pages
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +83,7 @@ const App = () => (
             <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
               <Route path="/account/users" element={<UserManagement />} />
               <Route path="/account/admin/equipment" element={<ManageEquipment />} />
+              <Route path="/account/materials" element={<ManageMaterials />} />
             </Route>
             
             {/* Owner-only routes */}
@@ -89,10 +99,13 @@ const App = () => (
               {/* Add client-specific routes here */}
             </Route>
             
-            {/* Static pages */}
-            <Route path="/privacy" element={<NotFound />} />
-            <Route path="/terms" element={<NotFound />} />
-            <Route path="/cookies" element={<NotFound />} />
+            {/* Shared account routes */}
+            <Route path="/account/settings" element={<AccountSettings />} />
+            
+            {/* Static legal pages */}
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/cookies" element={<Cookies />} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
