@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   Facebook, 
@@ -12,10 +12,31 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import Logo from "./Logo";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  
+  const handleNewsletter = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      toast({
+        title: "Inscription réussie !",
+        description: "Vous êtes maintenant inscrit à notre newsletter.",
+      });
+      setEmail("");
+    }
+  };
+  
+  const socialLinks = {
+    facebook: "https://facebook.com/btplocation",
+    twitter: "https://twitter.com/btplocation",
+    instagram: "https://instagram.com/btplocation",
+    linkedin: "https://linkedin.com/company/btplocation",
+  };
   
   return (
     <footer className="bg-secondary/20">
@@ -27,16 +48,16 @@ const Footer = () => {
               BTP Location révolutionne la location d'équipements et l'achat de matériaux pour les professionnels du BTP.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Linkedin className="h-5 w-5" />
               </a>
             </div>
@@ -99,16 +120,19 @@ const Footer = () => {
             <p className="text-muted-foreground mb-4">
               Recevez nos actualités et offres exclusives
             </p>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <form onSubmit={handleNewsletter} className="flex flex-col sm:flex-row gap-2">
               <Input 
                 type="email" 
                 placeholder="Votre email"
                 className="bg-white"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
-              <Button>
+              <Button type="submit">
                 <ArrowRight className="h-4 w-4" />
               </Button>
-            </div>
+            </form>
             <div className="mt-6 space-y-2">
               <div className="flex items-start">
                 <MapPin className="h-5 w-5 text-muted-foreground mr-2 mt-0.5" />
@@ -116,11 +140,11 @@ const Footer = () => {
               </div>
               <div className="flex items-center">
                 <Phone className="h-5 w-5 text-muted-foreground mr-2" />
-                <span className="text-muted-foreground">01 23 45 67 89</span>
+                <a href="tel:+33123456789" className="text-muted-foreground hover:text-primary transition-colors">01 23 45 67 89</a>
               </div>
               <div className="flex items-center">
                 <Mail className="h-5 w-5 text-muted-foreground mr-2" />
-                <span className="text-muted-foreground">contact@btplocation.fr</span>
+                <a href="mailto:contact@btplocation.fr" className="text-muted-foreground hover:text-primary transition-colors">contact@btplocation.fr</a>
               </div>
             </div>
           </div>
