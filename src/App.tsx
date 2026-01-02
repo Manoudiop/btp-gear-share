@@ -35,6 +35,7 @@ import EquipmentList from "./pages/account/owner/EquipmentList";
 import AddEquipment from "./pages/account/owner/AddEquipment";
 import Stats from "./pages/account/owner/Stats";
 import ActiveRentals from "./pages/account/owner/ActiveRentals";
+import Income from "./pages/account/owner/Income";
 
 // Admin Dashboard Pages
 import UserManagement from "./pages/account/admin/UserManagement";
@@ -92,12 +93,13 @@ const App = () => (
                 <Route path="/account/materials" element={<ManageMaterials />} />
               </Route>
               
-              {/* Owner-only routes */}
+{/* Owner-only routes */}
               <Route element={<PrivateRoute allowedRoles={["owner"]} />}>
                 <Route path="/account/equipment" element={<EquipmentList />} />
                 <Route path="/account/equipment/add" element={<AddEquipment />} />
                 <Route path="/account/stats" element={<Stats />} />
                 <Route path="/account/rentals" element={<ActiveRentals />} />
+                <Route path="/account/income" element={<Income />} />
               </Route>
               
               {/* Client-only routes */}

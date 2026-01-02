@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "@/hooks/use-toast";
+import { useCart } from "@/contexts/CartContext";
 
 // Données fictives - en pratique, ces données viendraient d'une API
 const materialsData = [
@@ -113,6 +114,7 @@ const materialsData = [
 const MaterialDetails = () => {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
+  const { addItem } = useCart();
 
   // Trouver le matériau correspondant à l'ID
   const material = materialsData.find(item => item.id === id);
@@ -146,6 +148,15 @@ const MaterialDetails = () => {
   };
 
   const addToCart = () => {
+    addItem({
+      id: material.id,
+      name: material.name,
+      image: material.image,
+      price: material.price,
+      unit: material.unit,
+      supplier: material.supplier,
+    }, quantity);
+    
     toast({
       title: "Ajouté au panier",
       description: `${quantity} ${material.unit} de ${material.name} ajouté au panier`,
@@ -153,11 +164,8 @@ const MaterialDetails = () => {
   };
 
   const buyNow = () => {
-    toast({
-      title: "Achat immédiat",
-      description: `Redirection vers le paiement pour ${quantity} ${material.unit} de ${material.name}`,
-    });
-    // En production: rediriger vers la page de paiement
+    addToCart();
+    window.location.href = "/cart";
   };
 
   return (
