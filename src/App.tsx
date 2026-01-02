@@ -63,61 +63,61 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/equipment" element={<Equipment />} />
-            <Route path="/equipment/:id" element={<EquipmentDetails />} />
-            <Route path="/materials" element={<Materials />} />
-            <Route path="/material/:id" element={<MaterialDetails />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/become-owner" element={<BecomeOwner />} />
-            <Route path="/custom-quote" element={<CustomQuote />} />
-            
-            {/* Auth routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            
-            {/* Private account routes */}
-            <Route path="/account" element={<Dashboard />} />
-            
-            {/* Admin-only routes */}
-            <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
-              <Route path="/account/users" element={<UserManagement />} />
-              <Route path="/account/admin/equipment" element={<ManageEquipment />} />
-              <Route path="/account/materials" element={<ManageMaterials />} />
-            </Route>
-            
-            {/* Owner-only routes */}
-            <Route element={<PrivateRoute allowedRoles={["owner"]} />}>
-              <Route path="/account/equipment" element={<EquipmentList />} />
-              <Route path="/account/equipment/add" element={<AddEquipment />} />
-              <Route path="/account/stats" element={<Stats />} />
-              <Route path="/account/rentals" element={<ActiveRentals />} />
-            </Route>
-            
-            {/* Client-only routes */}
-            <Route element={<PrivateRoute allowedRoles={["client"]} />}>
-              {/* Add client-specific routes here */}
-            </Route>
-            
-            {/* Shared account routes */}
-            <Route path="/account/settings" element={<AccountSettings />} />
-            
-            {/* Static legal pages */}
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/cookies" element={<Cookies />} />
-            
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/equipment" element={<Equipment />} />
+              <Route path="/equipment/:id" element={<EquipmentDetails />} />
+              <Route path="/materials" element={<Materials />} />
+              <Route path="/material/:id" element={<MaterialDetails />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/become-owner" element={<BecomeOwner />} />
+              <Route path="/custom-quote" element={<CustomQuote />} />
+              
+              {/* Auth routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              
+              {/* Private account routes */}
+              <Route path="/account" element={<Dashboard />} />
+              
+              {/* Admin-only routes */}
+              <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                <Route path="/account/users" element={<UserManagement />} />
+                <Route path="/account/admin/equipment" element={<ManageEquipment />} />
+                <Route path="/account/materials" element={<ManageMaterials />} />
+              </Route>
+              
+              {/* Owner-only routes */}
+              <Route element={<PrivateRoute allowedRoles={["owner"]} />}>
+                <Route path="/account/equipment" element={<EquipmentList />} />
+                <Route path="/account/equipment/add" element={<AddEquipment />} />
+                <Route path="/account/stats" element={<Stats />} />
+                <Route path="/account/rentals" element={<ActiveRentals />} />
+              </Route>
+              
+              {/* Client-only routes */}
+              <Route element={<PrivateRoute allowedRoles={["client"]} />}>
+                {/* Add client-specific routes here */}
+              </Route>
+              
+              {/* Shared account routes */}
+              <Route path="/account/settings" element={<AccountSettings />} />
+              
+              {/* Static legal pages */}
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/cookies" element={<Cookies />} />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
       </CartProvider>
     </AuthProvider>
   </QueryClientProvider>
