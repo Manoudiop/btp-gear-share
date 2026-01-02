@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Star, MapPin, ShoppingCart, Minus, Plus } from "lucide-react";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { useCart } from "@/contexts/CartContext";
 
 interface MaterialCardProps {
   id: string;
@@ -33,6 +33,7 @@ const MaterialCard = ({
 }: MaterialCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const { addItem } = useCart();
 
   const incrementQuantity = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,13 +47,22 @@ const MaterialCard = ({
     setQuantity(prev => prev > 1 ? prev - 1 : 1);
   };
   
-  const addToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    addItem({
+      id,
+      name,
+      image,
+      price,
+      unit,
+      supplier,
+    }, quantity);
     toast({
       title: "Ajouté au panier",
       description: `${quantity} ${unit} de ${name} ajouté au panier`,
     });
+    setQuantity(1);
   };
 
   return (
@@ -129,7 +139,7 @@ const MaterialCard = ({
               </div>
               <Button 
                 className="flex-1" 
-                onClick={addToCart}
+                onClick={handleAddToCart}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Ajouter

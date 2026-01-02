@@ -10,8 +10,10 @@ import {
   Search,
   User,
   LogOut,
-  Settings
+  Settings,
+  ShoppingCart
 } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
@@ -31,6 +33,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const { totalItems } = useCart();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -93,6 +96,17 @@ const Navbar = () => {
           <Button variant="outline" size="sm" className="rounded-full">
             <Search className="h-4 w-4 mr-2" />
             Rechercher
+          </Button>
+          
+          <Button variant="outline" size="sm" className="rounded-full relative" asChild>
+            <Link to="/cart">
+              <ShoppingCart className="h-4 w-4" />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
           </Button>
           
           {isAuthenticated ? (
@@ -175,6 +189,18 @@ const Navbar = () => {
               <Button variant="outline" className="w-full justify-start rounded-full">
                 <Search className="h-4 w-4 mr-2" />
                 Rechercher
+              </Button>
+              
+              <Button variant="outline" className="w-full justify-start rounded-full relative" asChild>
+                <Link to="/cart" onClick={() => setMobileMenuOpen(false)}>
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Panier
+                  {totalItems > 0 && (
+                    <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                </Link>
               </Button>
               
               {isAuthenticated ? (
