@@ -30,6 +30,10 @@ import ForgotPassword from "./pages/ForgotPassword";
 // Account Pages
 import Dashboard from "./pages/account/Dashboard";
 
+// Client Dashboard Pages
+import Orders from "./pages/account/client/Orders";
+import History from "./pages/account/client/History";
+
 // Owner Dashboard Pages
 import EquipmentList from "./pages/account/owner/EquipmentList";
 import AddEquipment from "./pages/account/owner/AddEquipment";
@@ -102,9 +106,10 @@ const App = () => (
                 <Route path="/account/income" element={<Income />} />
               </Route>
               
-              {/* Client-only routes */}
+{/* Client-only routes */}
               <Route element={<PrivateRoute allowedRoles={["client"]} />}>
-                {/* Add client-specific routes here */}
+                <Route path="/account/orders" element={<Orders />} />
+                <Route path="/account/history" element={<History />} />
               </Route>
               
               {/* Shared account routes */}
