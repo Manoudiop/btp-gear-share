@@ -32,6 +32,7 @@ import Dashboard from "./pages/account/Dashboard";
 
 // Client Dashboard Pages
 import Orders from "./pages/account/client/Orders";
+import OrderDetails from "./pages/account/client/OrderDetails";
 import History from "./pages/account/client/History";
 
 // Owner Dashboard Pages
@@ -109,6 +110,7 @@ const App = () => (
 {/* Client-only routes */}
               <Route element={<PrivateRoute allowedRoles={["client"]} />}>
                 <Route path="/account/orders" element={<Orders />} />
+                <Route path="/account/orders/:id" element={<OrderDetails />} />
                 <Route path="/account/history" element={<History />} />
               </Route>
               

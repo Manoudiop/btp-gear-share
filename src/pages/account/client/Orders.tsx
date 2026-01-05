@@ -1,4 +1,5 @@
 import { ShoppingCart, Package, Truck, CheckCircle, Clock, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 import AccountLayout from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -163,8 +164,8 @@ const Orders = () => {
                     <span className="font-bold text-lg">{order.total.toFixed(2)}€</span>
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      Voir détails
+                    <Button variant="outline" size="sm" className="flex-1" asChild>
+                      <Link to={`/account/orders/${order.id}`}>Voir détails</Link>
                     </Button>
                     {order.status === "delivered" && (
                       <Button variant="outline" size="sm" className="flex-1">
