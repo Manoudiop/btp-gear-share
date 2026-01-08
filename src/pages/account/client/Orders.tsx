@@ -21,6 +21,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 
 const mockOrders = [
@@ -113,11 +121,14 @@ const getStatusBadge = (status: string) => {
   }
 };
 
+const ORDERS_PER_PAGE = 5;
+
 const Orders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredOrders = useMemo(() => {
     return mockOrders.filter((order) => {
@@ -137,6 +148,18 @@ const Orders = () => {
 
       return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
     });
+  }, [searchQuery, statusFilter, dateFrom, dateTo]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
+  const paginatedOrders = useMemo(() => {
+    const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
+    return filteredOrders.slice(startIndex, startIndex + ORDERS_PER_PAGE);
+  }, [filteredOrders, currentPage]);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
   }, [searchQuery, statusFilter, dateFrom, dateTo]);
 
   const clearFilters = () => {
@@ -307,7 +330,7 @@ const Orders = () => {
               </CardContent>
             </Card>
           ) : (
-            filteredOrders.map((order) => (
+            paginatedOrders.map((order) => (
               <Card key={order.id}>
                 <CardHeader className="pb-3">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -350,6 +373,36 @@ const Orders = () => {
             ))
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className={cn(currentPage === 1 && "pointer-events-none opacity-50")}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(page)}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className={cn(currentPage === totalPages && "pointer-events-none opacity-50")}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
     </AccountLayout>
   );
