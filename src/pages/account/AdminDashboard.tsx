@@ -9,44 +9,50 @@ const AdminDashboard = () => {
   return (
     <AccountLayout title="Tableau de bord Administrateur">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium flex items-center">
-              <Users className="mr-2 h-5 w-5 text-primary" /> 
-              Utilisateurs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">1,254</p>
-            <p className="text-sm text-muted-foreground">+12% ce mois</p>
-          </CardContent>
-        </Card>
+        <Link to="/account/users">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center">
+                <Users className="mr-2 h-5 w-5 text-primary" /> 
+                Utilisateurs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">1,254</p>
+              <p className="text-sm text-muted-foreground">+12% ce mois</p>
+            </CardContent>
+          </Card>
+        </Link>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium flex items-center">
-              <Package className="mr-2 h-5 w-5 text-primary" /> 
-              Équipements
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">328</p>
-            <p className="text-sm text-muted-foreground">+8% ce mois</p>
-          </CardContent>
-        </Card>
+        <Link to="/account/admin/equipment">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center">
+                <Package className="mr-2 h-5 w-5 text-primary" /> 
+                Équipements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">328</p>
+              <p className="text-sm text-muted-foreground">+8% ce mois</p>
+            </CardContent>
+          </Card>
+        </Link>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium flex items-center">
-              <Briefcase className="mr-2 h-5 w-5 text-primary" /> 
-              Matériaux
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">48</p>
-            <p className="text-sm text-muted-foreground">Types disponibles</p>
-          </CardContent>
-        </Card>
+        <Link to="/account/materials">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center">
+                <Briefcase className="mr-2 h-5 w-5 text-primary" /> 
+                Matériaux
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">48</p>
+              <p className="text-sm text-muted-foreground">Types disponibles</p>
+            </CardContent>
+          </Card>
+        </Link>
         
         <Card>
           <CardHeader className="pb-2">
