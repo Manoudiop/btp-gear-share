@@ -1,9 +1,25 @@
 
 import { Link } from "react-router-dom";
-import { Users, Package, Briefcase, CreditCard, PieChart, BarChart, UserCog, Settings, Building } from "lucide-react";
+import { Users, Package, Briefcase, CreditCard, UserCog, Settings, Building } from "lucide-react";
 import AccountLayout from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+
+const userDistribution = [
+  { name: "Clients", value: 75, color: "hsl(var(--primary))" },
+  { name: "Loueurs", value: 24, color: "hsl(210, 70%, 60%)" },
+  { name: "Admins", value: 1, color: "hsl(142, 60%, 50%)" },
+];
+
+const monthlyRevenue = [
+  { month: "Sep", revenue: 95000 },
+  { month: "Oct", revenue: 102000 },
+  { month: "Nov", revenue: 98000 },
+  { month: "Déc", revenue: 115000 },
+  { month: "Jan", revenue: 121000 },
+  { month: "Fév", revenue: 128549 },
+];
 
 const AdminDashboard = () => {
   return (
@@ -71,48 +87,48 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-lg font-medium">Répartition des utilisateurs</span>
-            </CardTitle>
+            <CardTitle className="text-lg font-medium">Répartition des utilisateurs</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-60 flex items-center justify-center">
-              <div className="flex flex-col items-center space-y-2">
-                <PieChart className="h-8 w-8 text-primary" />
-                <div className="flex space-x-6 mt-4">
-                  <div className="flex items-center">
-                    <div className="h-3 w-3 rounded-full bg-primary mr-2"></div>
-                    <span className="text-sm">Clients (75%)</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="h-3 w-3 rounded-full bg-blue-400 mr-2"></div>
-                    <span className="text-sm">Loueurs (24%)</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="h-3 w-3 rounded-full bg-green-400 mr-2"></div>
-                    <span className="text-sm">Admins (1%)</span>
-                  </div>
-                </div>
-              </div>
+            <div className="h-60">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={userDistribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    dataKey="value"
+                    label={({ name, value }) => `${name} (${value}%)`}
+                  >
+                    {userDistribution.map((entry, index) => (
+                      <Cell key={index} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => `${value}%`} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-lg font-medium">Revenus mensuels</span>
-            </CardTitle>
+            <CardTitle className="text-lg font-medium">Revenus mensuels</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-60 flex items-center justify-center">
-              <div className="flex flex-col items-center space-y-2">
-                <BarChart className="h-8 w-8 text-primary" />
-                <p className="text-sm text-muted-foreground mt-4">
-                  Les revenus ont augmenté de 23% par rapport
-                  au même trimestre de l'année précédente
-                </p>
-              </div>
+            <div className="h-60">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyRevenue}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))" }} />
+                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
+                  <Tooltip formatter={(value: number) => `${value.toLocaleString()}€`} />
+                  <Bar dataKey="revenue" name="Revenus" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
