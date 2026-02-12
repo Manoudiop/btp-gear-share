@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageCurrencySwitcher from "./LanguageCurrencySwitcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +36,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
+  const { t } = useLanguage();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -50,13 +53,13 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { label: "Accueil", path: "/" },
-    { label: "Équipement", path: "/equipment" },
-    { label: "Matériaux", path: "/materials" },
-    { label: "Comment ça marche", path: "/how-it-works" },
-    { label: "Tarifs", path: "/pricing" },
-    { label: "À propos", path: "/about" },
-    { label: "Contact", path: "/contact" },
+    { label: t("nav.home"), path: "/" },
+    { label: t("nav.equipment"), path: "/equipment" },
+    { label: t("nav.materials"), path: "/materials" },
+    { label: t("nav.howItWorks"), path: "/how-it-works" },
+    { label: t("nav.pricing"), path: "/pricing" },
+    { label: t("nav.about"), path: "/about" },
+    { label: t("nav.contact"), path: "/contact" },
   ];
 
   return (
@@ -93,9 +96,11 @@ const Navbar = () => {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
+          <LanguageCurrencySwitcher />
+          
           <Button variant="outline" size="sm" className="rounded-full">
             <Search className="h-4 w-4 mr-2" />
-            Rechercher
+            {t("nav.search")}
           </Button>
           
           <Button variant="outline" size="sm" className="rounded-full relative" asChild>
@@ -118,24 +123,24 @@ const Navbar = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("nav.myAccount")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/account" className="cursor-pointer w-full">
                     <User className="mr-2 h-4 w-4" />
-                    <span>Tableau de bord</span>
+                    <span>{t("nav.dashboard")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/account/settings" className="cursor-pointer w-full">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Paramètres</span>
+                    <span>{t("nav.settings")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Se déconnecter</span>
+                  <span>{t("nav.logout")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -143,13 +148,13 @@ const Navbar = () => {
             <Button className="rounded-full" asChild>
               <Link to="/login">
                 <User className="h-4 w-4 mr-2" />
-                Connexion
+                {t("nav.login")}
               </Link>
             </Button>
           )}
           
           <Button variant="outline" size="sm" className="rounded-full" asChild>
-            <Link to="/become-owner">Devenir loueur</Link>
+            <Link to="/become-owner">{t("nav.becomeOwner")}</Link>
           </Button>
         </div>
 
@@ -186,15 +191,19 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="pt-4 space-y-3">
+              <div className="flex justify-center">
+                <LanguageCurrencySwitcher />
+              </div>
+              
               <Button variant="outline" className="w-full justify-start rounded-full">
                 <Search className="h-4 w-4 mr-2" />
-                Rechercher
+                {t("nav.search")}
               </Button>
               
               <Button variant="outline" className="w-full justify-start rounded-full relative" asChild>
                 <Link to="/cart" onClick={() => setMobileMenuOpen(false)}>
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Panier
+                  {t("nav.cart")}
                   {totalItems > 0 && (
                     <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {totalItems}
@@ -211,7 +220,7 @@ const Navbar = () => {
                   >
                     <Link to="/account" onClick={() => setMobileMenuOpen(false)}>
                       <User className="h-4 w-4 mr-2" />
-                      Mon compte
+                      {t("nav.myAccount")}
                     </Link>
                   </Button>
                   <Button 
@@ -223,7 +232,7 @@ const Navbar = () => {
                     }}
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Se déconnecter
+                    {t("nav.logout")}
                   </Button>
                 </>
               ) : (
@@ -233,14 +242,14 @@ const Navbar = () => {
                 >
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                     <User className="h-4 w-4 mr-2" />
-                    Connexion
+                    {t("nav.login")}
                   </Link>
                 </Button>
               )}
               
               <Button variant="outline" className="w-full justify-start rounded-full" asChild>
                 <Link to="/become-owner" onClick={() => setMobileMenuOpen(false)}>
-                  Devenir loueur
+                  {t("nav.becomeOwner")}
                 </Link>
               </Button>
             </div>
