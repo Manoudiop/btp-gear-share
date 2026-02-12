@@ -6,112 +6,99 @@ import { Link, useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Plan IDs ready for Stripe integration
 export const PRICING_PLANS = [
   {
     id: "free",
     stripePriceId: { monthly: null, annually: null },
-    name: "Gratuit",
-    description: "Pour découvrir la plateforme et les petits projets",
+    nameKey: "plan.free.name",
+    descKey: "plan.free.desc",
+    ctaKey: "plan.free.cta",
     icon: Zap,
     price: { monthly: 0, annually: 0 },
-    features: [
-      "Accès au catalogue d'équipements",
-      "Jusqu'à 3 demandes de location par mois",
-      "Support client par email",
-      "Paiement sécurisé",
+    featureKeys: [
+      "feature.catalog",
+      "feature.3requests",
+      "feature.emailSupport",
+      "feature.securePayment",
     ],
-    limitations: [
-      "Pas de réservation prioritaire",
-      "Pas d'assurance premium",
-      "Pas de livraison gratuite",
-      "Pas de remises exclusives",
+    limitationKeys: [
+      "limit.noPriority",
+      "limit.noPremiumInsurance",
+      "limit.noFreeDelivery",
+      "limit.noDiscounts",
     ],
-    cta: "Commencer gratuitement",
     popular: false,
   },
   {
     id: "pro",
     stripePriceId: { monthly: null, annually: null },
-    name: "Pro",
-    description: "Pour les entrepreneurs et PME du BTP",
+    nameKey: "plan.pro.name",
+    descKey: "plan.pro.desc",
+    ctaKey: "plan.pro.cta",
     icon: Shield,
     price: { monthly: 49, annually: 39 },
-    features: [
-      "Tout ce qui est inclus dans Gratuit",
-      "Demandes de location illimitées",
-      "Réservation prioritaire",
-      "Support client 24/7",
-      "Livraison gratuite (< 50km)",
-      "Remise de 10% sur toutes les locations",
-      "Assurance standard incluse",
+    featureKeys: [
+      "feature.allFree",
+      "feature.unlimited",
+      "feature.priority",
+      "feature.support247",
+      "feature.freeDelivery50",
+      "feature.discount10",
+      "feature.standardInsurance",
     ],
-    limitations: ["Pas d'assurance premium"],
-    cta: "Essayer 14 jours gratuits",
+    limitationKeys: ["limit.noPremiumInsurance"],
     popular: true,
   },
   {
     id: "enterprise",
     stripePriceId: { monthly: null, annually: null },
-    name: "Enterprise",
-    description: "Pour les grandes entreprises avec besoins réguliers",
+    nameKey: "plan.enterprise.name",
+    descKey: "plan.enterprise.desc",
+    ctaKey: "plan.enterprise.cta",
     icon: HeadphonesIcon,
     price: { monthly: 149, annually: 119 },
-    features: [
-      "Tout ce qui est inclus dans Pro",
-      "Gestionnaire de compte dédié",
-      "API pour intégration",
-      "Livraison gratuite (< 100km)",
-      "Remise de 20% sur toutes les locations",
-      "Assurance premium incluse",
-      "Rapports détaillés et analyses",
-      "Formations personnalisées",
+    featureKeys: [
+      "feature.allPro",
+      "feature.dedicatedManager",
+      "feature.api",
+      "feature.freeDelivery100",
+      "feature.discount20",
+      "feature.premiumInsurance",
+      "feature.reports",
+      "feature.training",
     ],
-    limitations: [],
-    cta: "Contacter les ventes",
+    limitationKeys: [],
     popular: false,
   },
 ];
 
-const FAQ_ITEMS = [
-  {
-    question: "Puis-je changer de plan à tout moment ?",
-    answer: "Oui, vous pouvez upgrader ou downgrader votre plan à tout moment. Le changement prend effet immédiatement et la facturation est ajustée au prorata.",
-  },
-  {
-    question: "Comment fonctionne l'essai gratuit de 14 jours ?",
-    answer: "L'essai gratuit vous donne accès à toutes les fonctionnalités du plan Pro pendant 14 jours. Aucune carte bancaire n'est requise pour commencer. À la fin de la période d'essai, vous pouvez choisir de continuer ou revenir au plan Gratuit.",
-  },
-  {
-    question: "Quels moyens de paiement acceptez-vous ?",
-    answer: "Nous acceptons les cartes bancaires (Visa, Mastercard, American Express), les virements SEPA et les prélèvements automatiques pour les plans annuels.",
-  },
-  {
-    question: "Y a-t-il un engagement de durée ?",
-    answer: "Non, les plans mensuels sont sans engagement. Les plans annuels bénéficient d'une réduction de 20% et sont facturés annuellement. Vous pouvez annuler à tout moment.",
-  },
-  {
-    question: "L'assurance est-elle incluse dans tous les plans ?",
-    answer: "L'assurance standard est incluse dans le plan Pro. L'assurance premium, qui couvre les dommages accidentels et le vol, est incluse uniquement dans le plan Enterprise.",
-  },
+const COMPARISON_FEATURE_KEYS = [
+  { labelKey: "comp.rentalRequests", freeKey: "comp.3perMonth", proKey: "comp.unlimited", enterpriseKey: "comp.unlimited" },
+  { labelKey: "comp.support", freeKey: "comp.email", proKey: "comp.247", enterpriseKey: "comp.dedicated" },
+  { labelKey: "comp.freeDelivery", free: false, pro: "< 50km", enterprise: "< 100km" },
+  { labelKey: "comp.discount", free: false, pro: "10%", enterprise: "20%" },
+  { labelKey: "comp.priorityBooking", free: false, pro: true, enterprise: true },
+  { labelKey: "comp.standardInsurance", free: false, pro: true, enterprise: true },
+  { labelKey: "comp.premiumInsurance", free: false, pro: false, enterprise: true },
+  { labelKey: "comp.api", free: false, pro: false, enterprise: true },
+  { labelKey: "comp.reports", free: false, pro: false, enterprise: true },
+  { labelKey: "comp.dedicatedManager", free: false, pro: false, enterprise: true },
 ];
 
-const COMPARISON_FEATURES = [
-  { label: "Demandes de location", free: "3/mois", pro: "Illimitées", enterprise: "Illimitées" },
-  { label: "Support client", free: "Email", pro: "24/7", enterprise: "Dédié" },
-  { label: "Livraison gratuite", free: false, pro: "< 50km", enterprise: "< 100km" },
-  { label: "Remise sur locations", free: false, pro: "10%", enterprise: "20%" },
-  { label: "Réservation prioritaire", free: false, pro: true, enterprise: true },
-  { label: "Assurance standard", free: false, pro: true, enterprise: true },
-  { label: "Assurance premium", free: false, pro: false, enterprise: true },
-  { label: "API & intégrations", free: false, pro: false, enterprise: true },
-  { label: "Rapports & analyses", free: false, pro: false, enterprise: true },
-  { label: "Gestionnaire dédié", free: false, pro: false, enterprise: true },
+const FAQ_KEYS = [
+  { qKey: "faq.q1", aKey: "faq.a1" },
+  { qKey: "faq.q2", aKey: "faq.a2" },
+  { qKey: "faq.q3", aKey: "faq.a3" },
+  { qKey: "faq.q4", aKey: "faq.a4" },
+  { qKey: "faq.q5", aKey: "faq.a5" },
 ];
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { t, formatPrice } = useLanguage();
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annually">("monthly");
 
   const handleSubscribe = (planId: string) => {
@@ -120,8 +107,7 @@ const Pricing = () => {
     } else if (planId === "enterprise") {
       navigate("/contact");
     } else {
-      // Stripe integration placeholder
-      toast.info("L'intégration de paiement sera bientôt disponible. Créez un compte pour commencer !");
+      toast.info("L'intégration de paiement sera bientôt disponible.");
       navigate("/register");
     }
   };
@@ -132,17 +118,23 @@ const Pricing = () => {
     return <span className="text-sm font-medium">{value}</span>;
   };
 
+  const getCompValue = (feature: typeof COMPARISON_FEATURE_KEYS[0], col: "free" | "pro" | "enterprise") => {
+    const keyField = `${col}Key` as keyof typeof feature;
+    if (keyField in feature) return t(feature[keyField] as string);
+    return (feature as any)[col];
+  };
+
   return (
     <div className="pt-24 pb-16">
       <div className="section-container">
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <Badge variant="secondary" className="mb-4">Tarification</Badge>
+          <Badge variant="secondary" className="mb-4">{t("pricing.badge")}</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Des plans adaptés à <span className="text-primary">chaque besoin</span>
+            {t("pricing.title1")}<span className="text-primary">{t("pricing.title2")}</span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Choisissez le forfait qui correspond le mieux à vos besoins en matériel de construction
+            {t("pricing.subtitle")}
           </p>
         </div>
 
@@ -156,7 +148,7 @@ const Pricing = () => {
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            Mensuel
+            {t("pricing.monthly")}
           </button>
           <button
             onClick={() => setBillingPeriod("annually")}
@@ -166,7 +158,7 @@ const Pricing = () => {
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            Annuel
+            {t("pricing.annually")}
             <Badge variant="outline" className="ml-2 text-xs border-primary text-primary">
               -20%
             </Badge>
@@ -190,7 +182,7 @@ const Pricing = () => {
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                    Le plus populaire
+                    {t("pricing.mostPopular")}
                   </div>
                 )}
 
@@ -199,39 +191,39 @@ const Pricing = () => {
                     <div className={`p-2 rounded-lg ${plan.popular ? "bg-primary/10" : "bg-muted"}`}>
                       <PlanIcon className={`h-5 w-5 ${plan.popular ? "text-primary" : "text-muted-foreground"}`} />
                     </div>
-                    <h3 className="text-2xl font-bold">{plan.name}</h3>
+                    <h3 className="text-2xl font-bold">{t(plan.nameKey)}</h3>
                   </div>
-                  <p className="text-muted-foreground text-sm">{plan.description}</p>
+                  <p className="text-muted-foreground text-sm">{t(plan.descKey)}</p>
                 </div>
 
                 <div className="mb-6">
                   <div className="flex items-baseline">
-                    <span className="text-5xl font-bold">{price}€</span>
+                    <span className="text-5xl font-bold">{formatPrice(price)}</span>
                     {price > 0 && (
-                      <span className="text-muted-foreground ml-2">/mois</span>
+                      <span className="text-muted-foreground ml-2">{t("pricing.perMonth")}</span>
                     )}
                   </div>
                   {price > 0 && billingPeriod === "annually" && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      Soit {price * 12}€ facturé annuellement
+                      {formatPrice(price * 12)} {t("pricing.billedAnnually")}
                     </p>
                   )}
                   {price === 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">Pour toujours</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("pricing.forever")}</p>
                   )}
                 </div>
 
                 <div className="space-y-3 mb-8 flex-1">
-                  {plan.features.map((feature, i) => (
+                  {plan.featureKeys.map((key, i) => (
                     <div key={i} className="flex items-start">
                       <Check className="h-5 w-5 text-primary mt-0.5 mr-3 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                      <span className="text-sm">{t(key)}</span>
                     </div>
                   ))}
-                  {plan.limitations.map((limitation, i) => (
+                  {plan.limitationKeys.map((key, i) => (
                     <div key={i} className="flex items-start text-muted-foreground">
                       <X className="h-5 w-5 text-muted-foreground/50 mt-0.5 mr-3 flex-shrink-0" />
-                      <span className="text-sm">{limitation}</span>
+                      <span className="text-sm">{t(key)}</span>
                     </div>
                   ))}
                 </div>
@@ -242,7 +234,7 @@ const Pricing = () => {
                   size="lg"
                   onClick={() => handleSubscribe(plan.id)}
                 >
-                  {plan.cta}
+                  {t(plan.ctaKey)}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -252,25 +244,25 @@ const Pricing = () => {
 
         {/* Comparison Table */}
         <div className="max-w-5xl mx-auto mb-20">
-          <h2 className="text-3xl font-bold text-center mb-8">Comparaison détaillée</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">{t("pricing.comparison")}</h2>
           <div className="border rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-muted/50">
-                    <th className="text-left p-4 font-medium text-muted-foreground">Fonctionnalité</th>
-                    <th className="text-center p-4 font-semibold">Gratuit</th>
-                    <th className="text-center p-4 font-semibold text-primary">Pro</th>
-                    <th className="text-center p-4 font-semibold">Enterprise</th>
+                    <th className="text-left p-4 font-medium text-muted-foreground">{t("pricing.feature")}</th>
+                    <th className="text-center p-4 font-semibold">{t("plan.free.name")}</th>
+                    <th className="text-center p-4 font-semibold text-primary">{t("plan.pro.name")}</th>
+                    <th className="text-center p-4 font-semibold">{t("plan.enterprise.name")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {COMPARISON_FEATURES.map((feature, i) => (
+                  {COMPARISON_FEATURE_KEYS.map((feature, i) => (
                     <tr key={i} className="border-t">
-                      <td className="p-4 text-sm font-medium">{feature.label}</td>
-                      <td className="p-4 text-center">{renderCellValue(feature.free)}</td>
-                      <td className="p-4 text-center bg-primary/5">{renderCellValue(feature.pro)}</td>
-                      <td className="p-4 text-center">{renderCellValue(feature.enterprise)}</td>
+                      <td className="p-4 text-sm font-medium">{t(feature.labelKey)}</td>
+                      <td className="p-4 text-center">{renderCellValue(getCompValue(feature, "free"))}</td>
+                      <td className="p-4 text-center bg-primary/5">{renderCellValue(getCompValue(feature, "pro"))}</td>
+                      <td className="p-4 text-center">{renderCellValue(getCompValue(feature, "enterprise"))}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -281,13 +273,13 @@ const Pricing = () => {
 
         {/* FAQ */}
         <div className="max-w-3xl mx-auto mb-20">
-          <h2 className="text-3xl font-bold text-center mb-8">Questions fréquentes</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">{t("pricing.faq")}</h2>
           <Accordion type="single" collapsible className="w-full">
-            {FAQ_ITEMS.map((item, i) => (
+            {FAQ_KEYS.map((item, i) => (
               <AccordionItem key={i} value={`faq-${i}`}>
-                <AccordionTrigger className="text-left">{item.question}</AccordionTrigger>
+                <AccordionTrigger className="text-left">{t(item.qKey)}</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground">
-                  {item.answer}
+                  {t(item.aKey)}
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -298,15 +290,15 @@ const Pricing = () => {
         <div className="bg-secondary/20 rounded-2xl p-8 md:p-12 max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="md:w-2/3">
-              <h2 className="text-2xl font-bold mb-4">Besoin d'une solution sur mesure ?</h2>
+              <h2 className="text-2xl font-bold mb-4">{t("pricing.customTitle")}</h2>
               <p className="text-muted-foreground mb-6">
-                Contactez notre équipe commerciale pour discuter de vos besoins spécifiques et obtenir une tarification personnalisée.
+                {t("pricing.customDesc")}
               </p>
               <Button
                 className="button-premium"
                 onClick={() => navigate("/custom-quote")}
               >
-                Demander un devis personnalisé
+                {t("pricing.customCta")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
