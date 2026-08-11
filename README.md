@@ -63,6 +63,18 @@ src/
 └── pages/         Une page par route
 ```
 
+### Visuels de marque
+
+`public/` contient le favicon, l'icône iOS et l'image de partage social.
+Ils sont générés par un script plutôt que retouchés à la main :
+
+```bash
+pip install pillow && python scripts/make-brand-assets.py
+```
+
+Pillow n'est pas une dépendance du projet : il ne sert qu'à régénérer ces
+fichiers après un changement de charte (couleur, logo, accroche).
+
 ### Données
 
 Tant qu'il n'y a pas d'API, `src/data/` tient lieu de base de données :
