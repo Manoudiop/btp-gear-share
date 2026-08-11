@@ -50,78 +50,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import { users as usersData } from "@/data/users";
 
-// Mock data
-const usersData = [
-  {
-    id: "1",
-    name: "Jean Dupont",
-    email: "jean.dupont@example.com",
-    role: "client",
-    status: "active",
-    joinDate: "2023-01-15",
-    lastLogin: "2023-08-10",
-    rentals: 5,
-    orders: 3
-  },
-  {
-    id: "2",
-    name: "Marie Martin",
-    email: "marie.martin@example.com",
-    role: "owner",
-    status: "active",
-    joinDate: "2023-02-20",
-    lastLogin: "2023-08-05",
-    rentals: 0,
-    orders: 0,
-    equipments: 7
-  },
-  {
-    id: "3",
-    name: "Paul Bernard",
-    email: "paul.bernard@example.com",
-    role: "client",
-    status: "inactive",
-    joinDate: "2023-03-10",
-    lastLogin: "2023-06-15",
-    rentals: 1,
-    orders: 0
-  },
-  {
-    id: "4",
-    name: "Sophie Dubois",
-    email: "sophie.dubois@example.com",
-    role: "client",
-    status: "suspended",
-    joinDate: "2023-04-05",
-    lastLogin: "2023-05-22",
-    rentals: 0,
-    orders: 2
-  },
-  {
-    id: "5",
-    name: "Thomas Leroy",
-    email: "thomas.leroy@example.com",
-    role: "admin",
-    status: "active",
-    joinDate: "2022-11-08",
-    lastLogin: "2023-08-12",
-    rentals: 0,
-    orders: 0
-  },
-  {
-    id: "6",
-    name: "Laura Petit",
-    email: "laura.petit@example.com",
-    role: "owner",
-    status: "active",
-    joinDate: "2023-01-30",
-    lastLogin: "2023-08-01",
-    rentals: 0,
-    orders: 0,
-    equipments: 3
-  }
-];
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");

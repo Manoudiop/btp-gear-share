@@ -2,16 +2,18 @@
 import { Shield, Truck, Watch, MessageSquare, CalendarCheck, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import FeatureCard from "@/components/FeatureCard";
 import EquipmentGrid from "@/components/EquipmentGrid";
-import Footer from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
 
 const Index = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen">
-      <Navbar />
+      <Seo title={t("seo.home")} description={t("seo.homeDesc")} />
       
       {/* Hero Section */}
       <Hero />
@@ -20,42 +22,40 @@ const Index = () => {
       <section className="bg-secondary/30 py-20">
         <div className="section-container">
           <div className="max-w-xl mx-auto text-center mb-12 animate-fade-up">
-            <h2 className="text-3xl font-bold mb-4">Pourquoi choisir BTP Location ?</h2>
-            <p className="text-muted-foreground">
-              Notre plateforme offre une expérience unique pour la location de matériel de construction
-            </p>
+            <h2 className="text-3xl font-bold mb-4">{t("home.whyTitle")}</h2>
+            <p className="text-muted-foreground">{t("home.whySubtitle")}</p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-up" style={{ animationDelay: "100ms" }}>
             <FeatureCard 
               icon={<Shield className="h-6 w-6" />}
-              title="Location sécurisée"
-              description="Matériel vérifié, contrats sécurisés et paiements protégés pour votre tranquillité d'esprit."
+              title={t("home.feature.secure.title")}
+              description={t("home.feature.secure.desc")}
             />
             <FeatureCard 
               icon={<Truck className="h-6 w-6" />}
-              title="Livraison sur chantier"
-              description="Livraison et récupération directement sur votre lieu de travail pour plus de commodité."
+              title={t("home.feature.delivery.title")}
+              description={t("home.feature.delivery.desc")}
             />
             <FeatureCard 
               icon={<Watch className="h-6 w-6" />}
-              title="Réservation rapide"
-              description="Processus de réservation simplifié et confirmation instantanée de votre matériel."
+              title={t("home.feature.booking.title")}
+              description={t("home.feature.booking.desc")}
             />
             <FeatureCard 
               icon={<MessageSquare className="h-6 w-6" />}
-              title="Communication directe"
-              description="Échangez facilement avec les propriétaires pour organiser votre location."
+              title={t("home.feature.chat.title")}
+              description={t("home.feature.chat.desc")}
             />
             <FeatureCard 
               icon={<CalendarCheck className="h-6 w-6" />}
-              title="Flexibilité des durées"
-              description="Louez à la journée, semaine ou mois selon vos besoins de chantier."
+              title={t("home.feature.flexible.title")}
+              description={t("home.feature.flexible.desc")}
             />
             <FeatureCard 
               icon={<CreditCard className="h-6 w-6" />}
-              title="Paiements transparents"
-              description="Tarifs clairs, sans frais cachés et multiples options de paiement."
+              title={t("home.feature.pricing.title")}
+              description={t("home.feature.pricing.desc")}
             />
           </div>
         </div>
@@ -75,16 +75,14 @@ const Index = () => {
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full translate-y-1/2 -translate-x-1/2" />
             
             <div className="relative z-10">
-              <h2 className="text-3xl font-bold mb-4">Prêt à louer ou proposer votre matériel ?</h2>
-              <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-                Rejoignez notre communauté de professionnels du BTP et transformez la façon dont vous gérez vos équipements de chantier.
-              </p>
+              <h2 className="text-3xl font-bold mb-4">{t("home.cta.title")}</h2>
+              <p className="text-muted-foreground mb-8 max-w-lg mx-auto">{t("home.cta.subtitle")}</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" className="button-premium" asChild>
-                  <Link to="/equipment">Trouver du matériel</Link>
+                  <Link to="/equipment">{t("home.cta.find")}</Link>
                 </Button>
                 <Button variant="outline" size="lg" className="button-outline" asChild>
-                  <Link to="/become-owner">Devenir loueur</Link>
+                  <Link to="/become-owner">{t("nav.becomeOwner")}</Link>
                 </Button>
               </div>
             </div>
@@ -96,10 +94,8 @@ const Index = () => {
       <section className="py-20">
         <div className="section-container">
           <div className="max-w-xl mx-auto text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Ce que disent nos utilisateurs</h2>
-            <p className="text-muted-foreground">
-              Découvrez les expériences de ceux qui utilisent déjà notre plateforme
-            </p>
+            <h2 className="text-3xl font-bold mb-4">{t("home.testimonials.title")}</h2>
+            <p className="text-muted-foreground">{t("home.testimonials.subtitle")}</p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -113,13 +109,13 @@ const Index = () => {
                   ))}
                 </div>
                 <p className="mb-4 text-foreground italic">
-                  "BTP Location a changé notre façon de gérer nos équipements. Nous pouvons maintenant obtenir exactement ce dont nous avons besoin, quand nous en avons besoin, sans les coûts d'achat."
+                  « {t("home.testimonials.quote")} »
                 </p>
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-full bg-gray-300 mr-3"></div>
                   <div>
                     <p className="font-medium">Jean Dupont</p>
-                    <p className="text-sm text-muted-foreground">Entrepreneur en construction</p>
+                    <p className="text-sm text-muted-foreground">{t("home.testimonials.role")}</p>
                   </div>
                 </div>
               </div>
@@ -129,7 +125,6 @@ const Index = () => {
       </section>
       
       {/* Footer */}
-      <Footer />
     </div>
   );
 };

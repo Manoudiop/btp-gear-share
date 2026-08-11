@@ -1,9 +1,7 @@
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,28 +18,33 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
 
-// Form validation schema
-const formSchema = z.object({
-  firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
-  lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  company: z.string().optional(),
-  email: z.string().email("Email invalide"),
-  phone: z.string().min(10, "Numéro de téléphone invalide"),
-  address: z.string().min(5, "Adresse invalide"),
-  city: z.string().min(2, "Ville invalide"),
-  postalCode: z.string().min(5, "Code postal invalide"),
-  description: z.string().optional(),
-  equipmentTypes: z.string().min(1, "Veuillez préciser les types d'équipements"),
-});
+// Le schéma dépend de la langue : les messages viennent de `t`.
+const createFormSchema = (t: (key: string) => string) =>
+  z.object({
+    firstName: z.string().min(2, t("owner.error.firstName")),
+    lastName: z.string().min(2, t("owner.error.lastName")),
+    company: z.string().optional(),
+    email: z.string().email(t("auth.error.email")),
+    phone: z.string().min(10, t("owner.error.phone")),
+    address: z.string().min(5, t("owner.error.address")),
+    city: z.string().min(2, t("owner.error.city")),
+    postalCode: z.string().min(5, t("owner.error.postalCode")),
+    description: z.string().optional(),
+    equipmentTypes: z.string().min(1, t("owner.error.equipmentTypes")),
+  });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>;
 
 const BecomeOwner = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const formSchema = useMemo(() => createFormSchema(t), [t]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -61,37 +64,32 @@ const BecomeOwner = () => {
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
-    
+
     try {
       // Simulate API call with timeout
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       toast({
-        title: "Inscription réussie!",
-        description: "Nous vous contacterons bientôt pour finaliser votre inscription.",
+        title: t("owner.toastTitle"),
+        description: t("owner.toastDesc"),
       });
-      
-      // Redirect to home page after successful submission
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue. Veuillez réessayer.",
-        variant: "destructive",
-      });
+
+      // L'écran de confirmation remplace la redirection automatique : l'utilisateur
+      // a le temps de lire la suite du processus avant de quitter la page.
+      setStep(3);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const nextStep = () => {
-    if (step === 1) {
-      const isStepValid = form.trigger(["firstName", "lastName", "email", "phone"]);
-      if (isStepValid) {
-        setStep(2);
-      }
+  const nextStep = async () => {
+    if (step !== 1) return;
+
+    // `trigger` renvoie une promesse : sans await, l'étape 2 s'ouvrait même
+    // quand les champs de l'étape 1 étaient invalides.
+    const isStepValid = await form.trigger(["firstName", "lastName", "email", "phone"]);
+    if (isStepValid) {
+      setStep(2);
     }
   };
 
@@ -102,19 +100,17 @@ const BecomeOwner = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-grow pt-24 pb-16">
+    <div className="flex flex-col">
+      <Seo title={t("owner.title")} description={t("owner.subtitle")} />
+
+      <div className="flex-grow pt-24 pb-16">
         <div className="section-container">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-10">
-              <h1 className="text-3xl font-bold mb-4">Devenir Loueur</h1>
-              <p className="text-muted-foreground">
-                Rejoignez notre communauté de propriétaires d'équipements et commencez à générer des revenus avec votre matériel BTP.
-              </p>
+              <h1 className="text-3xl font-bold mb-4">{t("owner.title")}</h1>
+              <p className="text-muted-foreground">{t("owner.subtitle")}</p>
             </div>
-            
+
             {/* Progress steps */}
             <div className="mb-10">
               <div className="flex items-center justify-center">
@@ -134,17 +130,23 @@ const BecomeOwner = () => {
               </div>
               <div className="flex justify-center mt-2">
                 <div className="text-center px-3">
-                  <span className={`text-sm font-medium ${step === 1 ? "text-primary" : ""}`}>Informations personnelles</span>
+                  <span className={`text-sm font-medium ${step === 1 ? "text-primary" : ""}`}>
+                    {t("owner.step1")}
+                  </span>
                 </div>
                 <div className="text-center px-3">
-                  <span className={`text-sm font-medium ${step === 2 ? "text-primary" : ""}`}>Détails de l'équipement</span>
+                  <span className={`text-sm font-medium ${step === 2 ? "text-primary" : ""}`}>
+                    {t("owner.step2")}
+                  </span>
                 </div>
                 <div className="text-center px-3">
-                  <span className={`text-sm font-medium ${step === 3 ? "text-primary" : ""}`}>Confirmation</span>
+                  <span className={`text-sm font-medium ${step === 3 ? "text-primary" : ""}`}>
+                    {t("owner.step3")}
+                  </span>
                 </div>
               </div>
             </div>
-            
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {step === 1 && (
@@ -155,7 +157,7 @@ const BecomeOwner = () => {
                         name="firstName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Prénom*</FormLabel>
+                            <FormLabel>{t("owner.firstName")}*</FormLabel>
                             <FormControl>
                               <Input placeholder="Jean" {...field} />
                             </FormControl>
@@ -168,7 +170,7 @@ const BecomeOwner = () => {
                         name="lastName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Nom*</FormLabel>
+                            <FormLabel>{t("owner.lastName")}*</FormLabel>
                             <FormControl>
                               <Input placeholder="Dupont" {...field} />
                             </FormControl>
@@ -177,13 +179,13 @@ const BecomeOwner = () => {
                         )}
                       />
                     </div>
-                    
+
                     <FormField
                       control={form.control}
                       name="company"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Entreprise (optionnel)</FormLabel>
+                          <FormLabel>{t("owner.company")}</FormLabel>
                           <FormControl>
                             <Input placeholder="BTP Dupont & Fils" {...field} />
                           </FormControl>
@@ -191,14 +193,14 @@ const BecomeOwner = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email*</FormLabel>
+                            <FormLabel>{t("auth.email")}*</FormLabel>
                             <FormControl>
                               <Input placeholder="jean.dupont@example.com" {...field} />
                             </FormControl>
@@ -211,7 +213,7 @@ const BecomeOwner = () => {
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Téléphone*</FormLabel>
+                            <FormLabel>{t("contact.phone")}*</FormLabel>
                             <FormControl>
                               <Input placeholder="06 12 34 56 78" {...field} />
                             </FormControl>
@@ -220,19 +222,19 @@ const BecomeOwner = () => {
                         )}
                       />
                     </div>
-                    
+
                     <div className="flex justify-end mt-6">
-                      <Button 
-                        type="button" 
+                      <Button
+                        type="button"
                         onClick={nextStep}
                         className="button-premium"
                       >
-                        Continuer
+                        {t("owner.continue")}
                       </Button>
                     </div>
                   </div>
                 )}
-                
+
                 {step === 2 && (
                   <div className="space-y-4 animate-fade-up">
                     <FormField
@@ -240,7 +242,7 @@ const BecomeOwner = () => {
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Adresse*</FormLabel>
+                          <FormLabel>{t("owner.address")}*</FormLabel>
                           <FormControl>
                             <Input placeholder="123 rue de la Construction" {...field} />
                           </FormControl>
@@ -248,14 +250,14 @@ const BecomeOwner = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="city"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Ville*</FormLabel>
+                            <FormLabel>{t("checkout.city")}*</FormLabel>
                             <FormControl>
                               <Input placeholder="Paris" {...field} />
                             </FormControl>
@@ -268,7 +270,7 @@ const BecomeOwner = () => {
                         name="postalCode"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Code postal*</FormLabel>
+                            <FormLabel>{t("checkout.postalCode")}*</FormLabel>
                             <FormControl>
                               <Input placeholder="75001" {...field} />
                             </FormControl>
@@ -277,104 +279,89 @@ const BecomeOwner = () => {
                         )}
                       />
                     </div>
-                    
+
                     <FormField
                       control={form.control}
                       name="equipmentTypes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Types d'équipements*</FormLabel>
+                          <FormLabel>{t("owner.equipmentTypes")}*</FormLabel>
                           <FormControl>
-                            <Input placeholder="Pelleteuses, Camions, Échafaudages..." {...field} />
+                            <Input placeholder={t("owner.equipmentTypesPlaceholder")} {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Listez les types d'équipements que vous souhaitez proposer à la location
-                          </FormDescription>
+                          <FormDescription>{t("owner.equipmentTypesHelp")}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Informations complémentaires (optionnel)</FormLabel>
+                          <FormLabel>{t("owner.moreInfo")}</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="Partagez plus d'informations sur vos équipements, leur état, disponibilité, etc." 
+                            <Textarea
+                              placeholder={t("owner.moreInfoPlaceholder")}
                               className="min-h-32"
-                              {...field} 
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="flex justify-between mt-6">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={prevStep}
                       >
-                        Retour
+                        {t("common.back")}
                       </Button>
-                      <Button 
+                      <Button
                         type="submit"
                         className="button-premium"
                         disabled={isSubmitting}
                       >
-                        {isSubmitting ? "Traitement en cours..." : "Soumettre ma demande"}
+                        {isSubmitting ? t("owner.submitting") : t("owner.submit")}
                       </Button>
                     </div>
                   </div>
                 )}
-                
+
                 {step === 3 && (
                   <div className="text-center py-12 animate-fade-up">
                     <div className="bg-green-100 p-3 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
                       <Check className="h-10 w-10 text-green-600" />
                     </div>
-                    <h2 className="text-2xl font-bold mb-4">Demande envoyée avec succès!</h2>
-                    <p className="text-muted-foreground mb-8">
-                      Merci pour votre intérêt! Notre équipe va examiner votre demande et vous contactera sous 48h pour finaliser votre inscription et configurer votre compte loueur.
-                    </p>
+                    <h2 className="text-2xl font-bold mb-4">{t("owner.successTitle")}</h2>
+                    <p className="text-muted-foreground mb-8">{t("owner.successDesc")}</p>
                     <Button onClick={() => navigate("/")} size="lg">
-                      Retourner à l'accueil
+                      {t("owner.backHome")}
                     </Button>
                   </div>
                 )}
               </form>
             </Form>
-            
+
             <div className="mt-12 bg-secondary/30 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Pourquoi devenir loueur sur BTP Location?</h3>
+              <h3 className="text-lg font-semibold mb-4">{t("owner.whyTitle")}</h3>
               <ul className="space-y-2">
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <span>Générez des revenus avec votre matériel inutilisé</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <span>Profitez d'une visibilité auprès de milliers de professionnels</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <span>Bénéficiez d'une assurance complète pour vos équipements</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                  <span>Gérez facilement vos locations via notre plateforme intuitive</span>
-                </li>
+                {["owner.why1", "owner.why2", "owner.why3", "owner.why4"].map((reason) => (
+                  <li key={reason} className="flex items-start">
+                    <Check className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                    <span>{t(reason)}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
         </div>
-      </main>
-      
-      <Footer />
+      </div>
+
     </div>
   );
 };

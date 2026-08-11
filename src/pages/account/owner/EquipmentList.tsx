@@ -34,65 +34,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { listings } from "@/data/listings";
 
-// Mock data
-const equipmentData = [
-  {
-    id: "1",
-    name: "Bétonnière 150L",
-    category: "Gros oeuvre",
-    price: 45,
-    status: "available",
-    rentals: 12,
-    income: 540,
-    image: "/placeholder.svg"
-  },
-  {
-    id: "2",
-    name: "Échafaudage 8m",
-    category: "Élévation",
-    price: 120,
-    status: "rented",
-    rentals: 8,
-    income: 960,
-    image: "/placeholder.svg"
-  },
-  {
-    id: "3",
-    name: "Marteau-piqueur",
-    category: "Démolition",
-    price: 65,
-    status: "available",
-    rentals: 10,
-    income: 650,
-    image: "/placeholder.svg"
-  },
-  {
-    id: "4",
-    name: "Pelleteuse mini",
-    category: "Terrassement",
-    price: 250,
-    status: "maintenance",
-    rentals: 5,
-    income: 1250,
-    image: "/placeholder.svg"
-  },
-  {
-    id: "5",
-    name: "Perceuse électrique professionnelle",
-    category: "Outillage",
-    price: 30,
-    status: "available",
-    rentals: 20,
-    income: 600,
-    image: "/placeholder.svg"
-  }
-];
 
 const EquipmentList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   
-  const filteredEquipment = equipmentData.filter(
+  const filteredEquipment = listings.filter(
     (item) => item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
@@ -210,7 +158,7 @@ const EquipmentList = () => {
                       </TableCell>
                       <TableCell>{equipment.category}</TableCell>
                       <TableCell>{equipment.price} €</TableCell>
-                      <TableCell>{getStatusBadge(equipment.status)}</TableCell>
+                      <TableCell>{getStatusBadge(equipment.availability)}</TableCell>
                       <TableCell>{equipment.rentals}</TableCell>
                       <TableCell>{equipment.income} €</TableCell>
                       <TableCell className="text-right">

@@ -20,6 +20,8 @@ import QuotePersonalStep from "@/components/quote/QuotePersonalStep";
 import QuoteProjectStep from "@/components/quote/QuoteProjectStep";
 import QuoteEquipmentStep from "@/components/quote/QuoteEquipmentStep";
 import QuoteConfirmation from "@/components/quote/QuoteConfirmation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
 
 type QuoteFormData = {
   // Personal information
@@ -41,6 +43,7 @@ type QuoteFormData = {
 
 const CustomQuote = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<QuoteFormData>({
     fullName: "",
@@ -89,26 +92,27 @@ const CustomQuote = () => {
 
   return (
     <div className="pt-24 pb-16">
+      <Seo title={t("quote.title")} description={t("quote.subtitle")} />
       <div className="section-container max-w-3xl mx-auto">
         <Button 
           variant="ghost" 
           className="mb-6 flex items-center" 
           onClick={() => navigate(-1)}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("common.back")}
         </Button>
 
         <div className="mb-10">
-          <h1 className="text-3xl font-bold mb-2">Devis personnalisé</h1>
-          <p className="text-muted-foreground">
-            Remplissez ce formulaire pour recevoir un devis adapté à vos besoins spécifiques.
-          </p>
+          <h1 className="text-3xl font-bold mb-2">{t("quote.title")}</h1>
+          <p className="text-muted-foreground">{t("quote.subtitle")}</p>
         </div>
 
         {!isSubmitted && (
           <div className="mb-8">
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">Étape {currentStep} sur {totalSteps}</span>
+              <span className="text-sm font-medium">
+                {t("quote.stepOf", { current: currentStep, total: totalSteps })}
+              </span>
               <span className="text-sm font-medium">{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />

@@ -1,29 +1,22 @@
 
-import { Helmet } from "react-helmet";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import AuthForm from "@/components/auth/AuthForm";
+import Seo from "@/components/Seo";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Login = () => {
+  const { t } = useLanguage();
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Connexion | BTP Location</title>
-        <meta 
-          name="description" 
-          content="Connectez-vous à votre compte BTP Location pour accéder à vos commandes, réservations et paramètres."
-        />
-      </Helmet>
+    <div className="flex flex-col">
+      <Seo title={t("auth.login")} />
       
-      <Navbar />
       
-      <main className="flex-grow flex items-center justify-center py-16 px-4 bg-muted/30">
+      <div className="flex items-center justify-center py-16 px-4 bg-muted/30 min-h-[70vh]">
         <div className="w-full max-w-md">
           <AuthForm type="login" />
         </div>
-      </main>
+      </div>
       
-      <Footer />
     </div>
   );
 };

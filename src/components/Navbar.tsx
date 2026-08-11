@@ -98,9 +98,11 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-4">
           <LanguageCurrencySwitcher />
           
-          <Button variant="outline" size="sm" className="rounded-full">
-            <Search className="h-4 w-4 mr-2" />
-            {t("nav.search")}
+          <Button variant="outline" size="sm" className="rounded-full" asChild>
+            <Link to="/equipment">
+              <Search className="h-4 w-4 mr-2" />
+              {t("nav.search")}
+            </Link>
           </Button>
           
           <Button variant="outline" size="sm" className="rounded-full relative" asChild>
@@ -195,9 +197,11 @@ const Navbar = () => {
                 <LanguageCurrencySwitcher />
               </div>
               
-              <Button variant="outline" className="w-full justify-start rounded-full">
-                <Search className="h-4 w-4 mr-2" />
-                {t("nav.search")}
+              <Button variant="outline" className="w-full justify-start rounded-full" asChild>
+                <Link to="/equipment" onClick={() => setMobileMenuOpen(false)}>
+                  <Search className="h-4 w-4 mr-2" />
+                  {t("nav.search")}
+                </Link>
               </Button>
               
               <Button variant="outline" className="w-full justify-start rounded-full relative" asChild>

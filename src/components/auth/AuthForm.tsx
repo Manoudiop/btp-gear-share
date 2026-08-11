@@ -1,11 +1,11 @@
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Lock, Eye, EyeOff, Shield, Building, UserCircle } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Building, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,83 +17,138 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAuth } from "@/contexts/AuthContext";
+import { demoAccounts, findDemoAccount, type UserRole } from "@/data/users";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const loginSchema = z.object({
-  email: z.string().email("Email invalide"),
-  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
-});
+// Les schémas dépendent de la langue : les messages viennent de `t`.
+const createLoginSchema = (t: (key: string) => string) =>
+  z.object({
+    email: z.string().email(t("auth.error.email")),
+    password: z.string().min(8, t("auth.error.password")),
+  });
 
-const registerSchema = loginSchema.extend({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  confirmPassword: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-});
+const createRegisterSchema = (t: (key: string) => string) =>
+  createLoginSchema(t)
+    .extend({
+      name: z.string().min(2, t("auth.error.name")),
+      confirmPassword: z.string().min(8, t("auth.error.password")),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.error.mismatch"),
+      path: ["confirmPassword"],
+    });
 
-type LoginFormData = z.infer<typeof loginSchema>;
-type RegisterFormData = z.infer<typeof registerSchema>;
-type UserRole = "admin" | "client" | "owner";
+type LoginFormData = z.infer<ReturnType<typeof createLoginSchema>>;
+type RegisterFormData = z.infer<ReturnType<typeof createRegisterSchema>>;
 
 interface AuthFormProps {
   type: "login" | "register";
   redirectTo?: string;
 }
 
+/** Rôles qu'un visiteur peut choisir à l'inscription — jamais « admin ». */
+const signupRoles: {
+  value: Extract<UserRole, "client" | "owner">;
+  labelKey: string;
+  icon: React.ReactNode;
+  descriptionKey: string;
+}[] = [
+  {
+    value: "client",
+    labelKey: "auth.role.client",
+    icon: <UserCircle className="h-5 w-5" />,
+    descriptionKey: "auth.role.clientDesc",
+  },
+  {
+    value: "owner",
+    labelKey: "auth.role.owner",
+    icon: <Building className="h-5 w-5" />,
+    descriptionKey: "auth.role.ownerDesc",
+  },
+];
+
 const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole>("client");
+  const [selectedRole, setSelectedRole] = useState<"client" | "owner">("client");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   const isLogin = type === "login";
-  const title = isLogin ? "Connexion" : "Inscription";
-  const schema = isLogin ? loginSchema : registerSchema;
+  const title = isLogin ? t("auth.login") : t("auth.register");
+  const schema = useMemo(
+    () => (isLogin ? createLoginSchema(t) : createRegisterSchema(t)),
+    [isLogin, t],
+  );
+
+  // PrivateRoute mémorise la page demandée avant la redirection vers /login.
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+  const destination = from ?? redirectTo;
 
   const form = useForm<LoginFormData | RegisterFormData>({
     resolver: zodResolver(schema),
-    defaultValues: isLogin 
-      ? { email: "", password: "" } 
+    defaultValues: isLogin
+      ? { email: "", password: "" }
       : { name: "", email: "", password: "", confirmPassword: "" },
   });
 
-  const roles: { value: UserRole; label: string; icon: React.ReactNode; description: string }[] = [
-    { value: "client", label: "Client", icon: <UserCircle className="h-5 w-5" />, description: "Louer du matériel" },
-    { value: "owner", label: "Loueur", icon: <Building className="h-5 w-5" />, description: "Proposer vos équipements" },
-    { value: "admin", label: "Administrateur", icon: <Shield className="h-5 w-5" />, description: "Gérer la plateforme" },
-  ];
+  const fillDemoAccount = (email: string, password: string) => {
+    form.setValue("email", email);
+    form.setValue("password", password);
+  };
 
   const onSubmit = (data: LoginFormData | RegisterFormData) => {
-    console.log("Form submitted:", data, "Role:", selectedRole);
-    
-    const userData = {
+    if (isLogin) {
+      const account = findDemoAccount(data.email, data.password);
+
+      if (!account) {
+        form.setError("password", { message: t("auth.badCredentials") });
+        return;
+      }
+
+      login({
+        id: `demo-${account.role}`,
+        name: account.name,
+        email: account.email,
+        role: account.role,
+        isAuthenticated: true,
+      });
+
+      toast({
+        title: t("auth.loginSuccess"),
+        description: t("auth.welcome", { name: account.name }),
+      });
+
+      navigate(destination, { replace: true });
+      return;
+    }
+
+    // Inscription : compte local, sans admin possible.
+    const registerData = data as RegisterFormData;
+
+    login({
       id: `user-${Date.now()}`,
-      name: isLogin ? (selectedRole === "admin" ? "Admin" : selectedRole === "owner" ? "Propriétaire" : "Client") : (data as RegisterFormData).name,
-      email: data.email,
+      name: registerData.name,
+      email: registerData.email,
       role: selectedRole,
       isAuthenticated: true,
-    };
-
-    login(userData);
-    
-    toast({
-      title: isLogin ? "Connexion réussie" : "Inscription réussie",
-      description: isLogin 
-        ? `Bienvenue ${userData.name} sur BTP Location.` 
-        : "Votre compte a été créé avec succès.",
     });
 
-    setTimeout(() => {
-      navigate(redirectTo);
-    }, 500);
+    toast({
+      title: t("auth.registerSuccess"),
+      description: t("auth.registerSuccessDesc"),
+    });
+
+    navigate(destination, { replace: true });
   };
 
   return (
     <div className="max-w-md w-full mx-auto p-6 bg-card rounded-lg shadow-md border">
       <h2 className="text-2xl font-bold text-center mb-6">{title}</h2>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {!isLogin && (
@@ -102,14 +157,10 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom</FormLabel>
+                  <FormLabel>{t("auth.name")}</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Input 
-                        placeholder="Votre nom" 
-                        className="pl-10" 
-                        {...field}
-                      />
+                      <Input placeholder={t("auth.namePlaceholder")} className="pl-10" {...field} />
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     </div>
                   </FormControl>
@@ -118,19 +169,20 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
               )}
             />
           )}
-          
+
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("auth.email")}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Input 
-                      type="email" 
-                      placeholder="votre@email.com" 
-                      className="pl-10" 
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      placeholder="votre@email.com"
+                      className="pl-10"
                       {...field}
                     />
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -140,32 +192,30 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mot de passe</FormLabel>
+                <FormLabel>{t("auth.password")}</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Input 
-                      type={showPassword ? "text" : "password"} 
-                      placeholder="********" 
-                      className="pl-10 pr-10" 
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      autoComplete={isLogin ? "current-password" : "new-password"}
+                      placeholder="********"
+                      className="pl-10 pr-10"
                       {...field}
                     />
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <button 
+                    <button
                       type="button"
+                      aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
                 </FormControl>
@@ -173,25 +223,31 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
               </FormItem>
             )}
           />
-          
+
           {!isLogin && (
             <FormField
               control={form.control}
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirmer le mot de passe</FormLabel>
+                  <FormLabel>{t("auth.confirmPassword")}</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Input 
-                        type={showConfirmPassword ? "text" : "password"} 
-                        placeholder="********" 
-                        className="pl-10 pr-10" 
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        placeholder="********"
+                        className="pl-10 pr-10"
                         {...field}
                       />
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                      <button 
+                      <button
                         type="button"
+                        aria-label={
+                          showConfirmPassword
+                            ? "Masquer le mot de passe"
+                            : "Afficher le mot de passe"
+                        }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
@@ -208,73 +264,94 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
               )}
             />
           )}
-          
+
           {isLogin && (
             <div className="text-sm text-right">
               <Link to="/forgot-password" className="text-primary hover:underline">
-                Mot de passe oublié ?
+                {t("auth.forgot")}
               </Link>
             </div>
           )}
 
-          {/* Role Selection for Demo */}
-          <div className="space-y-3">
-            <FormLabel>Type de compte (Demo)</FormLabel>
-            <div className="grid grid-cols-3 gap-2">
-              {roles.map((role) => (
-                <button
-                  key={role.value}
-                  type="button"
-                  onClick={() => setSelectedRole(role.value)}
-                  className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
-                    selectedRole === role.value
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  {role.icon}
-                  <span className="text-xs font-medium">{role.label}</span>
-                </button>
-              ))}
+          {!isLogin && (
+            <div className="space-y-3">
+              <FormLabel>{t("auth.iWant")}</FormLabel>
+              <div className="grid grid-cols-2 gap-2">
+                {signupRoles.map((role) => (
+                  <button
+                    key={role.value}
+                    type="button"
+                    onClick={() => setSelectedRole(role.value)}
+                    className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                      selectedRole === role.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    {role.icon}
+                    <span className="text-xs font-medium">{t(role.labelKey)}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                {t(signupRoles.find((r) => r.value === selectedRole)?.descriptionKey ?? "")}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground text-center">
-              {roles.find(r => r.value === selectedRole)?.description}
-            </p>
-          </div>
-          
+          )}
+
           <Button type="submit" className="w-full mt-6">
-            {isLogin ? "Se connecter" : "S'inscrire"}
+            {isLogin ? t("auth.signIn") : t("auth.signUp")}
           </Button>
         </form>
       </Form>
-      
+
+      {isLogin && (
+        <div className="mt-6 rounded-lg border border-dashed p-4">
+          <p className="text-sm font-medium mb-1">{t("auth.demoTitle")}</p>
+          <p className="text-xs text-muted-foreground mb-3">{t("auth.demoDesc")}</p>
+          <div className="space-y-2">
+            {demoAccounts.map((account) => (
+              <button
+                key={account.email}
+                type="button"
+                onClick={() => fillDemoAccount(account.email, account.password)}
+                className="w-full text-left text-xs rounded-md border px-3 py-2 hover:border-primary/50 hover:bg-muted/50 transition-colors"
+              >
+                <span className="font-medium">{account.email}</span>
+                <span className="text-muted-foreground"> · {t(account.descriptionKey)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 text-center text-sm">
         {isLogin ? (
           <p>
-            Pas encore de compte ?{" "}
+            {t("auth.noAccount")}{" "}
             <Link to="/register" className="text-primary hover:underline font-medium">
-              S'inscrire
+              {t("auth.signUp")}
             </Link>
           </p>
         ) : (
           <p>
-            Déjà un compte ?{" "}
+            {t("auth.hasAccount")}{" "}
             <Link to="/login" className="text-primary hover:underline font-medium">
-              Se connecter
+              {t("auth.signIn")}
             </Link>
           </p>
         )}
       </div>
-      
+
       {!isLogin && (
         <p className="mt-4 text-xs text-center text-muted-foreground">
-          En vous inscrivant, vous acceptez nos{" "}
+          {t("auth.terms")}{" "}
           <Link to="/terms" className="text-primary hover:underline">
-            conditions d'utilisation
+            {t("auth.termsLink")}
           </Link>{" "}
-          et notre{" "}
+          {t("auth.and")}{" "}
           <Link to="/privacy" className="text-primary hover:underline">
-            politique de confidentialité
+            {t("auth.privacyLink")}
           </Link>
           .
         </p>

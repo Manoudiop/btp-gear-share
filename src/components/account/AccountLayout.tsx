@@ -1,8 +1,8 @@
 
 import { ReactNode } from "react";
-import { Link, useLocation, Navigate } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   User,
   Package,
@@ -14,11 +14,13 @@ import {
   Users,
   Building,
   Briefcase,
+  BarChart3,
   CreditCard,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import Seo from "@/components/Seo";
 
 interface NavItemProps {
   href: string;
@@ -52,115 +54,57 @@ interface AccountLayoutProps {
 }
 
 const AccountLayout = ({ title, children }: AccountLayoutProps) => {
-  const { user, logout, isAdmin, isClient, isOwner } = useAuth();
-  const location = useLocation();
+  const { user, logout, isAdmin, isOwner } = useAuth();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
 
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  // PrivateRoute garantit déjà la session ; ce garde-fou évite un rendu vide si
+  // le layout est monté hors d'une route protégée.
+  if (!user) return null;
 
-  // Define navigation items based on user role
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  // Chaque entrée pointe vers une route réellement autorisée pour le rôle :
+  // les liens vers des routes d'un autre rôle renvoyaient l'utilisateur sur /account.
   const clientNavItems = [
-    {
-      href: "/account",
-      icon: <LayoutDashboard size={18} />,
-      label: "Tableau de bord",
-    },
-    {
-      href: "/account/orders",
-      icon: <ShoppingCart size={18} />,
-      label: "Mes commandes",
-    },
-    {
-      href: "/account/rentals",
-      icon: <Package size={18} />,
-      label: "Mes locations",
-    },
-    {
-      href: "/account/history",
-      icon: <History size={18} />,
-      label: "Historique",
-    },
-    {
-      href: "/account/settings",
-      icon: <Settings size={18} />,
-      label: "Paramètres",
-    },
+    { href: "/account", icon: <LayoutDashboard size={18} />, label: t("account.dashboard") },
+    { href: "/account/orders", icon: <ShoppingCart size={18} />, label: t("account.orders") },
+    { href: "/account/history", icon: <History size={18} />, label: t("account.history") },
+    { href: "/account/settings", icon: <Settings size={18} />, label: t("account.settings") },
   ];
 
   const ownerNavItems = [
-    {
-      href: "/account",
-      icon: <LayoutDashboard size={18} />,
-      label: "Tableau de bord",
-    },
-    {
-      href: "/account/equipment",
-      icon: <Package size={18} />,
-      label: "Mes équipements",
-    },
-    {
-      href: "/account/rentals",
-      icon: <Building size={18} />,
-      label: "Locations en cours",
-    },
-    {
-      href: "/account/income",
-      icon: <CreditCard size={18} />,
-      label: "Mes revenus",
-    },
-    {
-      href: "/account/settings",
-      icon: <Settings size={18} />,
-      label: "Paramètres",
-    },
+    { href: "/account", icon: <LayoutDashboard size={18} />, label: t("account.dashboard") },
+    { href: "/account/equipment", icon: <Package size={18} />, label: t("account.myEquipment") },
+    { href: "/account/rentals", icon: <Building size={18} />, label: t("account.currentRentals") },
+    { href: "/account/income", icon: <CreditCard size={18} />, label: t("account.income") },
+    { href: "/account/stats", icon: <BarChart3 size={18} />, label: t("account.stats") },
+    { href: "/account/settings", icon: <Settings size={18} />, label: t("account.settings") },
   ];
 
   const adminNavItems = [
+    { href: "/account", icon: <LayoutDashboard size={18} />, label: t("account.dashboard") },
+    { href: "/account/users", icon: <Users size={18} />, label: t("account.users") },
     {
-      href: "/account",
-      icon: <LayoutDashboard size={18} />,
-      label: "Tableau de bord",
-    },
-    {
-      href: "/account/users",
-      icon: <Users size={18} />,
-      label: "Utilisateurs",
-    },
-    {
-      href: "/account/equipment",
+      href: "/account/admin/equipment",
       icon: <Package size={18} />,
-      label: "Équipements",
+      label: t("account.equipment"),
     },
-    {
-      href: "/account/materials",
-      icon: <Briefcase size={18} />,
-      label: "Matériaux",
-    },
-    {
-      href: "/account/settings",
-      icon: <Settings size={18} />,
-      label: "Paramètres",
-    },
+    { href: "/account/materials", icon: <Briefcase size={18} />, label: t("account.materials") },
+    { href: "/account/settings", icon: <Settings size={18} />, label: t("account.settings") },
   ];
 
-  let navItems;
-  if (isAdmin) {
-    navItems = adminNavItems;
-  } else if (isOwner) {
-    navItems = ownerNavItems;
-  } else {
-    navItems = clientNavItems;
-  }
+  const navItems = isAdmin ? adminNavItems : isOwner ? ownerNavItems : clientNavItems;
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>{title} | BTP Location</title>
-      </Helmet>
-      
+      <Seo title={title} />
+
       <Navbar />
-      
+
       <main className="flex-grow py-12 px-4 bg-muted/30">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8">
@@ -173,34 +117,27 @@ const AccountLayout = ({ title, children }: AccountLayoutProps) => {
                       <User size={24} />
                     </div>
                     <div className="absolute -bottom-1 -right-1 bg-primary text-xs text-white px-2 py-0.5 rounded-md font-medium">
-                      {user.role === "admin" && "Admin"}
-                      {user.role === "owner" && "Loueur"}
-                      {user.role === "client" && "Client"}
+                      {t(`account.role.${user.role}`)}
                     </div>
                   </div>
-                  <div className="ml-4">
-                    <p className="font-semibold">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <div className="ml-4 min-w-0">
+                    <p className="font-semibold truncate">{user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                 </div>
 
                 <nav className="flex flex-col space-y-1">
                   {navItems.map((item) => (
-                    <NavItem
-                      key={item.href}
-                      href={item.href}
-                      icon={item.icon}
-                      label={item.label}
-                    />
+                    <NavItem key={item.href} href={item.href} icon={item.icon} label={item.label} />
                   ))}
                   <hr className="my-2 border-muted" />
                   <Button
                     variant="ghost"
                     className="justify-start text-muted-foreground hover:text-destructive"
-                    onClick={logout}
+                    onClick={handleLogout}
                   >
                     <LogOut size={18} className="mr-3" />
-                    Se déconnecter
+                    {t("nav.logout")}
                   </Button>
                 </nav>
               </div>
@@ -214,7 +151,7 @@ const AccountLayout = ({ title, children }: AccountLayoutProps) => {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

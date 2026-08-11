@@ -1,9 +1,10 @@
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, ReactNode, useCallback, useMemo, useState } from "react";
+import type { UserRole } from "@/data/users";
 
-type UserRole = "admin" | "client" | "owner";
+export type { UserRole };
 
-interface User {
+export interface AuthUser {
   id: string;
   name: string;
   email: string;
@@ -12,8 +13,8 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
-  login: (userData: User) => void;
+  user: AuthUser | null;
+  login: (userData: AuthUser) => void;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -21,10 +22,47 @@ interface AuthContextType {
   isOwner: boolean;
 }
 
-const defaultUser: User | null = null;
+const STORAGE_KEY = "authUser";
+const VALID_ROLES: UserRole[] = ["admin", "client", "owner"];
+
+/**
+ * Relit la session depuis localStorage.
+ *
+ * Lu de façon synchrone à l'initialisation du state : quand cette lecture se
+ * faisait dans un useEffect, le premier rendu était toujours « non connecté » et
+ * un simple rafraîchissement sur une page privée renvoyait vers /login.
+ */
+const readStoredUser = (): AuthUser | null => {
+  if (typeof window === "undefined") return null;
+
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  if (!stored) return null;
+
+  try {
+    const parsed = JSON.parse(stored) as Partial<AuthUser>;
+
+    // Le contenu du localStorage est modifiable par l'utilisateur : on ne garde
+    // qu'une session dont la forme et le rôle sont valides.
+    if (
+      typeof parsed?.id !== "string" ||
+      typeof parsed?.email !== "string" ||
+      typeof parsed?.name !== "string" ||
+      !VALID_ROLES.includes(parsed?.role as UserRole) ||
+      parsed?.isAuthenticated !== true
+    ) {
+      window.localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+
+    return parsed as AuthUser;
+  } catch {
+    window.localStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+};
 
 const AuthContext = createContext<AuthContextType>({
-  user: defaultUser,
+  user: null,
   login: () => {},
   logout: () => {},
   isAuthenticated: false,
@@ -36,46 +74,31 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(defaultUser);
-  
-  useEffect(() => {
-    // Check for existing user in localStorage on initial load
-    const storedUser = localStorage.getItem("authUser");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Error parsing stored user:", error);
-        localStorage.removeItem("authUser");
-      }
-    }
+  const [user, setUser] = useState<AuthUser | null>(readStoredUser);
+
+  const login = useCallback((userData: AuthUser) => {
+    setUser(userData);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
   }, []);
 
-  const login = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem("authUser", JSON.stringify(userData));
-  };
-
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
-    localStorage.removeItem("authUser");
-  };
+    window.localStorage.removeItem(STORAGE_KEY);
+  }, []);
 
-  const isAuthenticated = user?.isAuthenticated || false;
-  const isAdmin = isAuthenticated && user?.role === "admin";
-  const isClient = isAuthenticated && user?.role === "client";
-  const isOwner = isAuthenticated && user?.role === "owner";
+  const value = useMemo<AuthContextType>(() => {
+    const isAuthenticated = user?.isAuthenticated === true;
 
-  const value = {
-    user,
-    login,
-    logout,
-    isAuthenticated,
-    isAdmin,
-    isClient,
-    isOwner,
-  };
+    return {
+      user,
+      login,
+      logout,
+      isAuthenticated,
+      isAdmin: isAuthenticated && user?.role === "admin",
+      isClient: isAuthenticated && user?.role === "client",
+      isOwner: isAuthenticated && user?.role === "owner",
+    };
+  }, [user, login, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

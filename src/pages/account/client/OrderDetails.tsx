@@ -15,80 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { getOrderById } from "@/data/orders";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const mockOrders: Record<string, {
-  id: string;
-  date: string;
-  items: { name: string; quantity: number; price: number }[];
-  total: number;
-  status: string;
-  shippingAddress: {
-    name: string;
-    street: string;
-    city: string;
-    postalCode: string;
-    phone: string;
-  };
-  paymentMethod: string;
-  trackingNumber?: string;
-  estimatedDelivery?: string;
-  timeline: { status: string; date: string; time: string; completed: boolean; current?: boolean }[];
-}> = {
-  "1234": {
-    id: "1234",
-    date: "05/01/2026",
-    items: [
-      { name: "Sac de ciment 35kg", quantity: 10, price: 8.99 },
-      { name: "Sable 25kg", quantity: 5, price: 4.50 },
-    ],
-    total: 112.40,
-    status: "shipping",
-    shippingAddress: {
-      name: "Jean Dupont",
-      street: "123 Rue de la Construction",
-      city: "Paris",
-      postalCode: "75001",
-      phone: "06 12 34 56 78",
-    },
-    paymentMethod: "Carte bancaire ****4242",
-    trackingNumber: "FR123456789",
-    estimatedDelivery: "07/01/2026",
-    timeline: [
-      { status: "Commande confirmée", date: "05/01/2026", time: "10:30", completed: true },
-      { status: "En préparation", date: "05/01/2026", time: "14:15", completed: true },
-      { status: "Expédiée", date: "06/01/2026", time: "09:00", completed: true },
-      { status: "En cours de livraison", date: "07/01/2026", time: "08:30", completed: false, current: true },
-      { status: "Livrée", date: "", time: "", completed: false },
-    ],
-  },
-  "1201": {
-    id: "1201",
-    date: "28/12/2025",
-    items: [
-      { name: "Parpaing 20x20x50", quantity: 50, price: 2.10 },
-      { name: "Fer à béton 10mm", quantity: 20, price: 5.50 },
-      { name: "Fil de fer recuit", quantity: 2, price: 8.99 },
-    ],
-    total: 232.98,
-    status: "delivered",
-    shippingAddress: {
-      name: "Jean Dupont",
-      street: "123 Rue de la Construction",
-      city: "Paris",
-      postalCode: "75001",
-      phone: "06 12 34 56 78",
-    },
-    paymentMethod: "Carte bancaire ****4242",
-    trackingNumber: "FR987654321",
-    timeline: [
-      { status: "Commande confirmée", date: "28/12/2025", time: "11:00", completed: true },
-      { status: "En préparation", date: "28/12/2025", time: "15:30", completed: true },
-      { status: "Expédiée", date: "29/12/2025", time: "08:45", completed: true },
-      { status: "En cours de livraison", date: "30/12/2025", time: "07:00", completed: true },
-      { status: "Livrée", date: "30/12/2025", time: "14:22", completed: true },
-    ],
-  },
-};
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -127,7 +56,8 @@ const getStatusBadge = (status: string) => {
 
 const OrderDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const order = id ? mockOrders[id] : null;
+  const { formatPrice } = useLanguage();
+  const order = getOrderById(id);
 
   if (!order) {
     return (
@@ -239,13 +169,22 @@ const OrderDetails = () => {
                     <span className="text-muted-foreground">
                       {item.quantity}x {item.name}
                     </span>
-                    <span className="font-medium">{(item.quantity * item.price).toFixed(2)}€</span>
+                    <span className="font-medium">{formatPrice(item.quantity * item.price)}</span>
                   </div>
                 ))}
                 <Separator className="my-3" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Sous-total</span>
+                  <span>{formatPrice(order.subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Livraison ({order.deliveryOption})</span>
+                  <span>{order.deliveryFee === 0 ? "Offert" : formatPrice(order.deliveryFee)}</span>
+                </div>
+                <Separator className="my-3" />
                 <div className="flex justify-between">
                   <span className="font-medium">Total</span>
-                  <span className="font-bold text-lg">{order.total.toFixed(2)}€</span>
+                  <span className="font-bold text-lg">{formatPrice(order.total)}</span>
                 </div>
               </div>
             </CardContent>

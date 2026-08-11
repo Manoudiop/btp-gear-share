@@ -14,18 +14,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "./Logo";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   
   const handleNewsletter = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
       toast({
-        title: "Inscription réussie !",
-        description: "Vous êtes maintenant inscrit à notre newsletter.",
+        title: t("footer.newsletterSuccess"),
+        description: t("footer.newsletterSuccessDesc"),
       });
       setEmail("");
     }
@@ -44,9 +46,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-2">
             <Logo className="mb-6" />
-            <p className="text-muted-foreground max-w-xs mb-6">
-              BTP Location révolutionne la location d'équipements et l'achat de matériaux pour les professionnels du BTP.
-            </p>
+            <p className="text-muted-foreground max-w-xs mb-6">{t("footer.tagline")}</p>
             <div className="flex space-x-4">
               <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <Facebook className="h-5 w-5" />
@@ -64,66 +64,64 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-medium text-lg mb-4">Services</h4>
+            <h4 className="font-medium text-lg mb-4">{t("footer.services")}</h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/equipment" className="text-muted-foreground hover:text-primary transition-colors">
-                  Location d'équipements
+                  {t("footer.equipmentRental")}
                 </Link>
               </li>
               <li>
                 <Link to="/materials" className="text-muted-foreground hover:text-primary transition-colors">
-                  Achat de matériaux
+                  {t("footer.materialPurchase")}
                 </Link>
               </li>
               <li>
                 <Link to="/become-owner" className="text-muted-foreground hover:text-primary transition-colors">
-                  Devenir loueur
+                  {t("nav.becomeOwner")}
                 </Link>
               </li>
               <li>
                 <Link to="/custom-quote" className="text-muted-foreground hover:text-primary transition-colors">
-                  Devis personnalisé
+                  {t("footer.customQuote")}
                 </Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h4 className="font-medium text-lg mb-4">Informations</h4>
+            <h4 className="font-medium text-lg mb-4">{t("footer.info")}</h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  À propos
+                  {t("nav.about")}
                 </Link>
               </li>
               <li>
                 <Link to="/how-it-works" className="text-muted-foreground hover:text-primary transition-colors">
-                  Comment ça marche
+                  {t("nav.howItWorks")}
                 </Link>
               </li>
               <li>
                 <Link to="/pricing" className="text-muted-foreground hover:text-primary transition-colors">
-                  Tarifs
+                  {t("nav.pricing")}
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact
+                  {t("nav.contact")}
                 </Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h4 className="font-medium text-lg mb-4">Newsletter</h4>
-            <p className="text-muted-foreground mb-4">
-              Recevez nos actualités et offres exclusives
-            </p>
+            <h4 className="font-medium text-lg mb-4">{t("footer.newsletter")}</h4>
+            <p className="text-muted-foreground mb-4">{t("footer.newsletterDesc")}</p>
             <form onSubmit={handleNewsletter} className="flex flex-col sm:flex-row gap-2">
               <Input 
                 type="email" 
-                placeholder="Votre email"
+                placeholder={t("footer.emailPlaceholder")}
                 className="bg-white"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -154,17 +152,17 @@ const Footer = () => {
         
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-muted-foreground text-sm">
-            © {currentYear} BTP Location. Tous droits réservés.
+            © {currentYear} BTP Location. {t("footer.rights")}
           </p>
           <div className="flex gap-4 text-sm">
             <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
-              Politique de confidentialité
+              {t("footer.privacyPolicy")}
             </Link>
             <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
-              Conditions d'utilisation
+              {t("footer.terms")}
             </Link>
             <Link to="/cookies" className="text-muted-foreground hover:text-primary transition-colors">
-              Cookies
+              {t("footer.cookies")}
             </Link>
           </div>
         </div>

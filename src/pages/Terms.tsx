@@ -1,15 +1,16 @@
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-
+import Seo from "@/components/Seo";
+import { useLanguage } from "@/contexts/LanguageContext";
 const Terms = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      <Seo title={t("legal.terms")} />
       
-      <main className="flex-grow pt-24 pb-16">
+      <div className="flex-grow pt-24 pb-16">
         <div className="section-container">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">Conditions d'Utilisation</h1>
+            <h1 className="text-3xl font-bold mb-8">{t("legal.terms")}</h1>
             
             <div className="prose prose-lg max-w-none space-y-6">
               <section>
@@ -63,9 +64,8 @@ const Terms = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
       
-      <Footer />
     </div>
   );
 };

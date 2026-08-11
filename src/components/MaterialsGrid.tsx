@@ -1,120 +1,89 @@
 
-import { Package, Shovel, Boxes, Box, ShoppingCart, ChevronRight, Filter } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { ArrowUpDown } from "lucide-react";
 import CategoryButton from "./CategoryButton";
 import MaterialCard from "./MaterialCard";
 import SearchBar from "./SearchBar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { materials } from "@/data/materials";
+import { ALL_CATEGORIES, materialCategoryOptions, categoryLabel } from "@/data/categoryIcons";
+import type { Material } from "@/data/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+type SortOption = "relevance" | "price-asc" | "price-desc" | "rating";
 
 const MaterialsGrid = () => {
-  const categories = [
-    { icon: <Box className="h-6 w-6" />, label: "Sable" },
-    { icon: <Package className="h-6 w-6" />, label: "Ciment" },
-    { icon: <Box className="h-6 w-6" />, label: "Béton" },
-    { icon: <Boxes className="h-6 w-6" />, label: "Agrégats" },
-    { icon: <Shovel className="h-6 w-6" />, label: "Terre" },
-    { icon: <ShoppingCart className="h-6 w-6" />, label: "Tous" },
-  ];
+  const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeCategory = searchParams.get("category") ?? ALL_CATEGORIES;
+  const query = searchParams.get("q")?.toLowerCase() ?? "";
+  const [sortBy, setSortBy] = useState<SortOption>("relevance");
 
-  const materialsData = [
-    {
-      id: "1",
-      name: "Sable de construction fin",
-      image: "https://images.unsplash.com/photo-1582469566055-5216648cc753?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "Sable",
-      price: 45,
-      unit: "tonne",
-      rating: 4.7,
-      supplier: "Matériaux Express",
-      isAvailable: true,
-    },
-    {
-      id: "2",
-      name: "Ciment Portland 32.5",
-      image: "https://images.unsplash.com/photo-1604163546180-039a1781c0d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "Ciment",
-      price: 95,
-      unit: "tonne",
-      rating: 4.9,
-      supplier: "Ciments de France",
-      isAvailable: true,
-    },
-    {
-      id: "3",
-      name: "Béton prêt à l'emploi C25/30",
-      image: "https://images.unsplash.com/photo-1566027310713-1d34d3c2c654?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "Béton",
-      price: 110,
-      unit: "m³",
-      rating: 4.8,
-      supplier: "Béton Solutions",
-      isAvailable: true,
-    },
-    {
-      id: "4",
-      name: "Gravier 20/40mm",
-      image: "https://images.unsplash.com/photo-1518406432532-9cbef5697723?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "Agrégats",
-      price: 38,
-      unit: "tonne",
-      rating: 4.6,
-      supplier: "Carrières du Sud",
-      isAvailable: true,
-    },
-    {
-      id: "5",
-      name: "Terre végétale amendée",
-      image: "https://images.unsplash.com/photo-1595915636540-3142ee10d19c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "Terre",
-      price: 55,
-      unit: "m³",
-      rating: 4.5,
-      supplier: "Terres & Jardins",
-      isAvailable: false,
-    },
-    {
-      id: "6",
-      name: "Sable de rivière lavé",
-      image: "https://images.unsplash.com/photo-1600007277799-44736c28e2f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      category: "Sable",
-      price: 52,
-      unit: "tonne",
-      rating: 4.8,
-      supplier: "Matériaux Express",
-      isAvailable: true,
-    },
-  ];
+  const selectCategory = (category: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (category === ALL_CATEGORIES) {
+      next.delete("category");
+    } else {
+      next.set("category", category);
+    }
+    setSearchParams(next);
+  };
+
+  const filteredMaterials = useMemo(() => {
+    const byCategory =
+      activeCategory === ALL_CATEGORIES
+        ? materials
+        : materials.filter((item) => item.category === activeCategory);
+
+    const bySearch = query
+      ? byCategory.filter(
+          (item) =>
+            item.name.toLowerCase().includes(query) ||
+            item.supplier.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query),
+        )
+      : byCategory;
+
+    const sorters: Record<SortOption, (a: Material, b: Material) => number> = {
+      relevance: () => 0,
+      "price-asc": (a, b) => a.price - b.price,
+      "price-desc": (a, b) => b.price - a.price,
+      rating: (a, b) => b.rating - a.rating,
+    };
+
+    return [...bySearch].sort(sorters[sortBy]);
+  }, [activeCategory, query, sortBy]);
 
   return (
     <div className="section-container">
       <div className="mb-12 max-w-xl mx-auto text-center animate-fade-up">
-        <h2 className="text-3xl font-bold mb-4">
-          Matériaux de construction de qualité
-        </h2>
+        <h2 className="text-3xl font-bold mb-4">{t("materials.gridTitle")}</h2>
         <p className="text-muted-foreground">
-          Commandez du sable, ciment, béton et autres matériaux directement auprès de nos fournisseurs certifiés
+          {t("materials.gridSubtitle")}
         </p>
       </div>
 
       <div className="mb-12 animate-fade-up" style={{ animationDelay: "100ms" }}>
-        <SearchBar />
+        <SearchBar target="/materials" placeholder={t("materials.searchPlaceholder")} />
       </div>
 
       <div className="mb-12 animate-fade-up" style={{ animationDelay: "200ms" }}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold">Catégories de matériaux</h3>
-          <Button variant="ghost" className="text-primary flex items-center gap-1">
-            <Filter className="h-4 w-4 mr-1" />
-            Filtrer
-          </Button>
-        </div>
+        <h3 className="text-xl font-semibold mb-6">{t("materials.categories")}</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {categories.map((category, index) => (
+          {materialCategoryOptions.map((category) => (
             <CategoryButton
-              key={index}
+              key={category.label}
               icon={category.icon}
-              label={category.label}
-              isActive={index === 0}
+              label={categoryLabel(t, category.label)}
+              isActive={activeCategory === category.label}
+              onClick={() => selectCategory(category.label)}
             />
           ))}
         </div>
@@ -122,22 +91,34 @@ const MaterialsGrid = () => {
 
       <div className="animate-fade-up" style={{ animationDelay: "300ms" }}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold">Matériaux populaires</h3>
-          <Button variant="ghost" className="text-primary flex items-center gap-1">
-            Voir tout <ChevronRight className="h-4 w-4" />
-          </Button>
+          <h3 className="text-xl font-semibold">
+            {t("materials.count", { count: filteredMaterials.length })}
+          </h3>
+          <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+            <SelectTrigger className="w-[200px]">
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              <SelectValue placeholder={t("common.sortBy")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="relevance">{t("common.relevance")}</SelectItem>
+              <SelectItem value="price-asc">{t("common.priceAsc")}</SelectItem>
+              <SelectItem value="price-desc">{t("common.priceDesc")}</SelectItem>
+              <SelectItem value="rating">{t("common.bestRated")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {materialsData.map((material) => (
-            <MaterialCard key={material.id} {...material} />
-          ))}
-        </div>
-        <div className="mt-10 text-center">
-          <Button size="lg" className="button-premium">
-            Voir tous les matériaux
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+
+        {filteredMaterials.length > 0 ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMaterials.map((material) => (
+              <MaterialCard key={material.id} {...material} />
+            ))}
+          </div>
+        ) : (
+          <p className="py-12 text-center text-muted-foreground">
+            {t("materials.noResults")}
+          </p>
+        )}
       </div>
     </div>
   );

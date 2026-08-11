@@ -40,8 +40,8 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { listingCategories, listings, rentalsByListing } from "@/data/listings";
 
-// Mock data
 const revenueData = [
   { name: "Jan", revenue: 1200 },
   { name: "Feb", revenue: 1900 },
@@ -57,21 +57,20 @@ const revenueData = [
   { name: "Dec", revenue: 2700 },
 ];
 
-const categoryData = [
-  { name: "Gros œuvre", value: 35 },
-  { name: "Élévation", value: 25 },
-  { name: "Outillage", value: 20 },
-  { name: "Terrassement", value: 10 },
-  { name: "Autre", value: 10 },
-];
+// Répartition des locations par catégorie, calculée depuis le parc du loueur.
+const totalRentals = listings.reduce((sum, item) => sum + item.rentals, 0);
+const categoryData = listingCategories.map((category) => ({
+  name: category,
+  value: Math.round(
+    (listings
+      .filter((item) => item.category === category)
+      .reduce((sum, item) => sum + item.rentals, 0) /
+      totalRentals) *
+      100,
+  ),
+}));
 
-const equipmentData = [
-  { name: "Bétonnière 150L", rentals: 12 },
-  { name: "Échafaudage 8m", rentals: 8 },
-  { name: "Marteau-piqueur", rentals: 10 },
-  { name: "Pelleteuse mini", rentals: 5 },
-  { name: "Perceuse", rentals: 20 },
-];
+const equipmentData = rentalsByListing;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 

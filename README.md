@@ -1,69 +1,115 @@
-# Welcome to your Lovable project
+# BTP Gear Share
 
-## Project info
+Plateforme de **location de matériel de chantier** et de **vente de matériaux de construction**,
+mettant en relation loueurs et professionnels du BTP.
 
-**URL**: https://lovable.dev/projects/782a5bb4-449d-462e-b46b-90fcdf75e4de
+Interface bilingue français / anglais, avec conversion de devise (EUR, XOF, USD).
 
-## How can I edit this code?
+## Démarrage
 
-There are several ways of editing your application.
+```bash
+npm install
+```
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/782a5bb4-449d-462e-b46b-90fcdf75e4de) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+L'application démarre sur http://localhost:8080.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| Commande | Effet |
+| --- | --- |
+| `npm run dev` | Serveur de développement (port 8080) |
+| `npm run build` | Build de production dans `dist/` |
+| `npm run preview` | Sert le build de production localement |
+| `npm run lint` | ESLint sur tout le projet |
 
-**Use GitHub Codespaces**
+## Comptes de démonstration
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+L'authentification est **simulée côté client** : il n'y a pas encore de backend.
+Les identifiants ci-dessous sont vérifiés dans le navigateur et ne protègent rien —
+ils servent uniquement à explorer les trois espaces.
 
-## What technologies are used for this project?
+| Email | Mot de passe | Espace |
+| --- | --- | --- |
+| `client@btp.demo` | `demo1234` | Client — commandes, historique |
+| `loueur@btp.demo` | `demo1234` | Loueur — parc, locations, revenus, stats |
+| `admin@btp.demo` | `demo1234` | Administration — utilisateurs, annonces, matériaux |
 
-This project is built with .
+Le formulaire de connexion propose ces comptes en un clic.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Stack
 
-## How can I deploy this project?
+- **Vite** + **React 18** + **TypeScript**
+- **Tailwind CSS** + **shadcn/ui** (Radix)
+- **React Router v6** — routes publiques sous un layout commun, espaces compte protégés par rôle
+- **React Hook Form** + **Zod** — formulaires et validation
+- **Recharts** — graphiques du tableau de bord loueur
+- **TanStack Query** — installé, prêt pour le branchement d'une API
 
-Simply open [Lovable](https://lovable.dev/projects/782a5bb4-449d-462e-b46b-90fcdf75e4de) and click on Share -> Publish.
+## Organisation
 
-## I want to use a custom domain - is that possible?
+```
+src/
+├── data/          Source unique des données (catalogue, annonces, utilisateurs, commandes)
+├── i18n/          Dictionnaire FR/EN
+├── contexts/      Auth, panier, langue & devise
+├── components/
+│   ├── layout/    Chrome public (navbar + footer + remontée de scroll)
+│   ├── account/   Chrome des espaces compte
+│   ├── auth/      Formulaire d'authentification, garde de route
+│   ├── quote/     Assistant de devis sur mesure
+│   └── ui/        Primitives shadcn/ui
+└── pages/         Une page par route
+```
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+### Données
+
+Tant qu'il n'y a pas d'API, `src/data/` tient lieu de base de données :
+
+| Fichier | Contenu |
+| --- | --- |
+| `equipment.ts` | Catalogue de location + recherche par id et similaires |
+| `materials.ts` | Catalogue de vente + produits associés |
+| `listings.ts` | Parc vu du back-office (modération admin, disponibilité loueur) |
+| `users.ts` | Annuaire des utilisateurs et comptes de démonstration |
+| `orders.ts` | Commandes de démonstration + commandes passées, persistées en `localStorage` |
+| `types.ts` | Types partagés |
+
+Le jour où un backend arrive, ce sont les fonctions d'accès de ces fichiers
+(`getEquipmentById`, `getOrders`, `placeOrder`…) qui deviennent des appels réseau —
+les pages n'ont pas à changer.
+
+### Internationalisation
+
+`src/i18n/translations.ts` porte le dictionnaire ; `useLanguage()` expose :
+
+- `t(clé, variables?)` — traduction, avec interpolation `{nom}`
+- `formatPrice(montantEur)` — conversion et formatage selon la devise active
+- `language`, `currency`, `locale`
+
+Les montants sont stockés **en euros** dans les données et convertis à l'affichage.
+Langue et devise sont mémorisées dans `localStorage`, la langue initiale étant
+déduite du navigateur.
+
+Les textes légaux (`/privacy`, `/terms`, `/cookies`) et les tableaux du back-office
+restent en français.
+
+### Persistance navigateur
+
+| Clé `localStorage` | Contenu |
+| --- | --- |
+| `authUser` | Session (validée à la lecture) |
+| `btp-cart` | Panier |
+| `btp-orders` | Commandes passées depuis le tunnel |
+| `btp-language`, `btp-currency` | Préférences d'affichage |
+
+## Limites connues
+
+- **Aucun backend.** Authentification, paiement, envoi de formulaires et suivi de
+  commande sont simulés dans le navigateur. Rien n'est réellement protégé ni transmis.
+- Le paiement du tunnel de commande ne demande aucune coordonnée bancaire et
+  n'effectue aucune transaction.
+- Les actions du back-office (approuver, supprimer, mettre en avant) affichent une
+  confirmation mais ne modifient pas les données.
+- La vue carte du catalogue d'équipements n'est pas implémentée.

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ShoppingCart, Package, Truck, CheckCircle, Clock, Search, Filter, CalendarIcon, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
@@ -30,53 +30,9 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
+import { getOrders } from "@/data/orders";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const mockOrders = [
-  {
-    id: "1234",
-    date: "05/01/2026",
-    rawDate: new Date(2026, 0, 5),
-    items: [
-      { name: "Sac de ciment 35kg", quantity: 10, price: 8.99 },
-      { name: "Sable 25kg", quantity: 5, price: 4.50 },
-    ],
-    total: 112.40,
-    status: "shipping",
-  },
-  {
-    id: "1201",
-    date: "28/12/2025",
-    rawDate: new Date(2025, 11, 28),
-    items: [
-      { name: "Parpaing 20x20x50", quantity: 50, price: 2.10 },
-      { name: "Fer à béton 10mm", quantity: 20, price: 5.50 },
-      { name: "Fil de fer recuit", quantity: 2, price: 8.99 },
-    ],
-    total: 232.98,
-    status: "delivered",
-  },
-  {
-    id: "1189",
-    date: "20/12/2025",
-    rawDate: new Date(2025, 11, 20),
-    items: [
-      { name: "Plaque de plâtre BA13", quantity: 15, price: 12.99 },
-    ],
-    total: 194.85,
-    status: "delivered",
-  },
-  {
-    id: "1156",
-    date: "10/12/2025",
-    rawDate: new Date(2025, 11, 10),
-    items: [
-      { name: "Carrelage sol 60x60", quantity: 8, price: 35.00 },
-      { name: "Colle carrelage 25kg", quantity: 3, price: 18.50 },
-    ],
-    total: 335.50,
-    status: "delivered",
-  },
-];
 
 const statusOptions = [
   { value: "all", label: "Tous les statuts" },
@@ -124,6 +80,9 @@ const getStatusBadge = (status: string) => {
 const ORDERS_PER_PAGE = 5;
 
 const Orders = () => {
+  // Les commandes passées depuis le tunnel s'ajoutent aux commandes de démonstration.
+  const { formatPrice } = useLanguage();
+  const [orders] = useState(getOrders);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
@@ -131,7 +90,7 @@ const Orders = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredOrders = useMemo(() => {
-    return mockOrders.filter((order) => {
+    return orders.filter((order) => {
       // Search filter
       const matchesSearch = 
         order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -143,12 +102,13 @@ const Orders = () => {
       const matchesStatus = statusFilter === "all" || order.status === statusFilter;
 
       // Date filter
-      const matchesDateFrom = !dateFrom || order.rawDate >= dateFrom;
-      const matchesDateTo = !dateTo || order.rawDate <= dateTo;
+      const orderDate = new Date(order.createdAt);
+      const matchesDateFrom = !dateFrom || orderDate >= dateFrom;
+      const matchesDateTo = !dateTo || orderDate <= dateTo;
 
       return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
     });
-  }, [searchQuery, statusFilter, dateFrom, dateTo]);
+  }, [orders, searchQuery, statusFilter, dateFrom, dateTo]);
 
   // Pagination
   const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
@@ -158,9 +118,18 @@ const Orders = () => {
   }, [filteredOrders, currentPage]);
 
   // Reset to page 1 when filters change
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter, dateFrom, dateTo]);
+
+  const stats = useMemo(
+    () => ({
+      total: orders.length,
+      inProgress: orders.filter((order) => order.status !== "delivered").length,
+      spent: orders.reduce((sum, order) => sum + order.total, 0),
+    }),
+    [orders],
+  );
 
   const clearFilters = () => {
     setSearchQuery("");
@@ -180,7 +149,7 @@ const Orders = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">4</p>
+                  <p className="text-2xl font-bold">{stats.total}</p>
                   <p className="text-sm text-muted-foreground">Total commandes</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-primary opacity-80" />
@@ -191,7 +160,7 @@ const Orders = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">1</p>
+                  <p className="text-2xl font-bold">{stats.inProgress}</p>
                   <p className="text-sm text-muted-foreground">En cours</p>
                 </div>
                 <Truck className="h-8 w-8 text-blue-500 opacity-80" />
@@ -202,7 +171,7 @@ const Orders = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">875,73€</p>
+                  <p className="text-2xl font-bold">{formatPrice(stats.spent)}</p>
                   <p className="text-sm text-muted-foreground">Total dépensé</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-500 opacity-80" />
@@ -350,12 +319,12 @@ const Orders = () => {
                         <span className="text-muted-foreground">
                           {item.quantity}x {item.name}
                         </span>
-                        <span>{(item.quantity * item.price).toFixed(2)}€</span>
+                        <span>{formatPrice(item.quantity * item.price)}</span>
                       </div>
                     ))}
                     <div className="pt-3 border-t flex justify-between items-center">
                       <span className="font-medium">Total</span>
-                      <span className="font-bold text-lg">{order.total.toFixed(2)}€</span>
+                      <span className="font-bold text-lg">{formatPrice(order.total)}</span>
                     </div>
                     <div className="flex gap-2 pt-2">
                       <Button variant="outline" size="sm" className="flex-1" asChild>

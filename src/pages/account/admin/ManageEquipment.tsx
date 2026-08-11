@@ -41,87 +41,15 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { listings, listingCategories } from "@/data/listings";
 
-// Mock data
-const equipmentData = [
-  {
-    id: "1",
-    name: "Bétonnière 150L",
-    owner: "Martin Construction",
-    ownerId: "o1",
-    category: "Gros oeuvre",
-    price: 45,
-    status: "approved",
-    featured: true,
-    rating: 4.5,
-    totalRentals: 27,
-    totalRevenue: 1215,
-    image: "/placeholder.svg"
-  },
-  {
-    id: "2",
-    name: "Échafaudage 8m",
-    owner: "ÉchaFrance Pro",
-    ownerId: "o2",
-    category: "Élévation",
-    price: 120,
-    status: "approved",
-    featured: false,
-    rating: 4.2,
-    totalRentals: 18,
-    totalRevenue: 2160,
-    image: "/placeholder.svg"
-  },
-  {
-    id: "3",
-    name: "Marteau-piqueur",
-    owner: "Outillage Dupont",
-    ownerId: "o3",
-    category: "Démolition",
-    price: 65,
-    status: "pending",
-    featured: false,
-    rating: 0,
-    totalRentals: 0,
-    totalRevenue: 0,
-    image: "/placeholder.svg"
-  },
-  {
-    id: "4",
-    name: "Pelleteuse mini",
-    owner: "LoueBTP",
-    ownerId: "o4",
-    category: "Terrassement",
-    price: 250,
-    status: "approved",
-    featured: true,
-    rating: 4.8,
-    totalRentals: 14,
-    totalRevenue: 3500,
-    image: "/placeholder.svg"
-  },
-  {
-    id: "5",
-    name: "Perceuse électrique professionnelle",
-    owner: "OutilsPro",
-    ownerId: "o5",
-    category: "Outillage",
-    price: 30,
-    status: "rejected",
-    featured: false,
-    rating: 0,
-    totalRentals: 0,
-    totalRevenue: 0,
-    image: "/placeholder.svg"
-  }
-];
 
 const ManageEquipment = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   
-  const filteredEquipment = equipmentData.filter(
+  const filteredEquipment = listings.filter(
     (item) => {
       const matchesSearch = 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -198,11 +126,11 @@ const ManageEquipment = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes les catégories</SelectItem>
-                  <SelectItem value="gros oeuvre">Gros œuvre</SelectItem>
-                  <SelectItem value="élévation">Élévation</SelectItem>
-                  <SelectItem value="outillage">Outillage</SelectItem>
-                  <SelectItem value="démolition">Démolition</SelectItem>
-                  <SelectItem value="terrassement">Terrassement</SelectItem>
+                  {listingCategories.map((category) => (
+                    <SelectItem key={category} value={category.toLowerCase()}>
+                      {category}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Select

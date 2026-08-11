@@ -7,6 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import Seo from "@/components/Seo";
 
 // Plan IDs ready for Stripe integration
 export const PRICING_PLANS = [
@@ -75,7 +76,18 @@ export const PRICING_PLANS = [
   },
 ];
 
-const COMPARISON_FEATURE_KEYS = [
+/** Une cellule vaut soit une clé i18n, soit une valeur littérale (booléen ou texte). */
+interface ComparisonFeature {
+  labelKey: string;
+  freeKey?: string;
+  proKey?: string;
+  enterpriseKey?: string;
+  free?: boolean | string;
+  pro?: boolean | string;
+  enterprise?: boolean | string;
+}
+
+const COMPARISON_FEATURE_KEYS: ComparisonFeature[] = [
   { labelKey: "comp.rentalRequests", freeKey: "comp.3perMonth", proKey: "comp.unlimited", enterpriseKey: "comp.unlimited" },
   { labelKey: "comp.support", freeKey: "comp.email", proKey: "comp.247", enterpriseKey: "comp.dedicated" },
   { labelKey: "comp.freeDelivery", free: false, pro: "< 50km", enterprise: "< 100km" },
@@ -118,14 +130,14 @@ const Pricing = () => {
     return <span className="text-sm font-medium">{value}</span>;
   };
 
-  const getCompValue = (feature: typeof COMPARISON_FEATURE_KEYS[0], col: "free" | "pro" | "enterprise") => {
-    const keyField = `${col}Key` as keyof typeof feature;
-    if (keyField in feature) return t(feature[keyField] as string);
-    return (feature as any)[col];
+  const getCompValue = (feature: ComparisonFeature, col: "free" | "pro" | "enterprise") => {
+    const translationKey = feature[`${col}Key` as const];
+    return translationKey ? t(translationKey) : feature[col];
   };
 
   return (
     <div className="pt-24 pb-16">
+      <Seo title={t("nav.pricing")} description={t("pricing.subtitle")} />
       <div className="section-container">
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center mb-12">

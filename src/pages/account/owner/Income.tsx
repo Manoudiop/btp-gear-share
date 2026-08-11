@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { Helmet } from "react-helmet";
 import AccountLayout from "@/components/account/AccountLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,6 +37,8 @@ import {
   Bar,
   Legend
 } from "recharts";
+import Seo from "@/components/Seo";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Données fictives pour les revenus mensuels
 const monthlyRevenueData = [
@@ -123,20 +124,21 @@ const topEquipmentData = [
 ];
 
 const Income = () => {
+  const { t } = useLanguage();
   const [period, setPeriod] = useState("year");
   
   // Calculs des statistiques
   const totalRevenue = transactionsData
-    .filter(t => t.type === "crédit" && t.statut === "payé")
-    .reduce((sum, t) => sum + t.montant, 0);
+    .filter((tx) => tx.type === "crédit" && tx.statut === "payé")
+    .reduce((sum, tx) => sum + tx.montant, 0);
   
   const pendingRevenue = transactionsData
     .filter(t => t.type === "crédit" && t.statut === "en_attente")
-    .reduce((sum, t) => sum + t.montant, 0);
+    .reduce((sum, tx) => sum + tx.montant, 0);
   
   const totalWithdrawn = transactionsData
-    .filter(t => t.type === "débit")
-    .reduce((sum, t) => sum + t.montant, 0);
+    .filter((tx) => tx.type === "débit")
+    .reduce((sum, tx) => sum + tx.montant, 0);
   
   const availableBalance = totalRevenue - totalWithdrawn;
 
@@ -155,10 +157,7 @@ const Income = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Mes revenus | BTP Location</title>
-        <meta name="description" content="Gérez et suivez vos revenus de location d'équipements BTP" />
-      </Helmet>
+      <Seo title={t("account.income")} />
 
       <AccountLayout title="Mes revenus">
         <div className="space-y-6">

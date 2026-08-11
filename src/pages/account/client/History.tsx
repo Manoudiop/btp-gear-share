@@ -3,6 +3,8 @@ import AccountLayout from "@/components/account/AccountLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { getOrders } from "@/data/orders";
 
 const mockRentalHistory = [
   {
@@ -31,34 +33,23 @@ const mockRentalHistory = [
   },
 ];
 
-const mockPurchaseHistory = [
-  {
-    id: "1156",
-    date: "10/12/2025",
-    items: 2,
-    total: 335.50,
-  },
-  {
-    id: "1189",
-    date: "20/12/2025",
-    items: 1,
-    total: 194.85,
-  },
-  {
-    id: "1201",
-    date: "28/12/2025",
-    items: 3,
-    total: 232.98,
-  },
-  {
-    id: "1234",
-    date: "05/01/2026",
-    items: 2,
-    total: 112.40,
-  },
-];
 
 const History = () => {
+  const { formatPrice } = useLanguage();
+
+  // Les achats affichés sont les commandes réelles, les locations restent fictives
+  // tant que la réservation d'équipement n'est pas persistée.
+  const purchaseHistory = getOrders().map((order) => ({
+    id: order.id,
+    date: order.date,
+    items: order.items.length,
+    total: order.total,
+  }));
+
+  const totalSpent =
+    mockRentalHistory.reduce((sum, rental) => sum + rental.price, 0) +
+    purchaseHistory.reduce((sum, purchase) => sum + purchase.total, 0);
+
   return (
     <AccountLayout title="Historique">
       <div className="space-y-6">
@@ -68,7 +59,7 @@ const History = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-2xl font-bold">{mockRentalHistory.length}</p>
                   <p className="text-sm text-muted-foreground">Locations passées</p>
                 </div>
                 <Package className="h-8 w-8 text-primary opacity-80" />
@@ -79,7 +70,7 @@ const History = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">4</p>
+                  <p className="text-2xl font-bold">{purchaseHistory.length}</p>
                   <p className="text-sm text-muted-foreground">Achats effectués</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-primary opacity-80" />
@@ -90,7 +81,7 @@ const History = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">1 310,73€</p>
+                  <p className="text-2xl font-bold">{formatPrice(totalSpent)}</p>
                   <p className="text-sm text-muted-foreground">Total dépensé</p>
                 </div>
                 <HistoryIcon className="h-8 w-8 text-primary opacity-80" />
@@ -139,7 +130,7 @@ const History = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">{rental.price.toFixed(2)}€</p>
+                        <p className="font-bold">{formatPrice(rental.price)}</p>
                         <Button variant="link" size="sm" className="p-0 h-auto">
                           Relouer
                         </Button>
@@ -160,7 +151,7 @@ const History = () => {
               </Button>
             </div>
             <div className="space-y-4">
-              {mockPurchaseHistory.map((purchase) => (
+              {purchaseHistory.map((purchase) => (
                 <Card key={purchase.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -176,7 +167,7 @@ const History = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">{purchase.total.toFixed(2)}€</p>
+                        <p className="font-bold">{formatPrice(purchase.total)}</p>
                         <Button variant="link" size="sm" className="p-0 h-auto">
                           Voir détails
                         </Button>

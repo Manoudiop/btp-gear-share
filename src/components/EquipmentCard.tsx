@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { Star, MapPin, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { categoryLabel } from "@/data/categoryIcons";
 
 interface EquipmentCardProps {
   id: string;
@@ -27,6 +29,7 @@ const EquipmentCard = ({
   isAvailable,
 }: EquipmentCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { t, formatPrice } = useLanguage();
 
   return (
     <Link to={`/equipment/${id}`} className="block">
@@ -46,13 +49,13 @@ const EquipmentCard = ({
           />
           <div className="absolute top-3 left-3">
             <Badge className="bg-white/90 text-primary hover:bg-white/80 backdrop-blur-sm">
-              {category}
+              {categoryLabel(t, category)}
             </Badge>
           </div>
           {!isAvailable && (
             <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center">
               <Badge variant="destructive" className="text-sm font-medium px-3 py-1.5">
-                Non disponible
+                {t("common.unavailable")}
               </Badge>
             </div>
           )}
@@ -75,11 +78,14 @@ const EquipmentCard = ({
           
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xl font-bold">{price} €<span className="text-sm font-normal text-muted-foreground">/jour</span></p>
+              <p className="text-xl font-bold">
+                {formatPrice(price)}
+                <span className="text-sm font-normal text-muted-foreground">{t("common.perDay")}</span>
+              </p>
             </div>
             <div className="flex items-center text-sm text-green-600">
               <Clock className="h-4 w-4 mr-1" />
-              <span>Réponse rapide</span>
+              <span>{t("common.quickResponse")}</span>
             </div>
           </div>
         </div>

@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { categoryLabel } from "@/data/categoryIcons";
 
 interface MaterialCardProps {
   id: string;
@@ -34,6 +36,7 @@ const MaterialCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCart();
+  const { t, formatPrice } = useLanguage();
 
   const incrementQuantity = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,8 +62,8 @@ const MaterialCard = ({
       supplier,
     }, quantity);
     toast({
-      title: "Ajouté au panier",
-      description: `${quantity} ${unit} de ${name} ajouté au panier`,
+      title: t("materials.addedToCart"),
+      description: t("materials.addedToCartDesc", { quantity, unit, name }),
     });
     setQuantity(1);
   };
@@ -83,13 +86,13 @@ const MaterialCard = ({
           />
           <div className="absolute top-3 left-3">
             <Badge className="bg-white/90 text-primary hover:bg-white/80 backdrop-blur-sm">
-              {category}
+              {categoryLabel(t, category)}
             </Badge>
           </div>
           {!isAvailable && (
             <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center">
               <Badge variant="destructive" className="text-sm font-medium px-3 py-1.5">
-                Non disponible
+                {t("common.unavailable")}
               </Badge>
             </div>
           )}
@@ -112,7 +115,10 @@ const MaterialCard = ({
           
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xl font-bold">{price} €<span className="text-sm font-normal text-muted-foreground">/{unit}</span></p>
+              <p className="text-xl font-bold">
+                {formatPrice(price)}
+                <span className="text-sm font-normal text-muted-foreground">/{unit}</span>
+              </p>
             </div>
           </div>
           
@@ -142,7 +148,7 @@ const MaterialCard = ({
                 onClick={handleAddToCart}
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                Ajouter
+                {t("materials.add")}
               </Button>
             </div>
           )}
