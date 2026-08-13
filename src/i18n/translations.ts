@@ -23,6 +23,13 @@ export const translations: Record<string, Record<Language, string>> = {
   "nav.settings": { fr: "Paramètres", en: "Settings" },
   "nav.logout": { fr: "Se déconnecter", en: "Logout" },
   "nav.cart": { fr: "Panier", en: "Cart" },
+  "nav.more": { fr: "En savoir plus", en: "Learn more" },
+  "nav.allEquipment": { fr: "Tout le matériel", en: "All equipment" },
+  "nav.allMaterials": { fr: "Tous les matériaux", en: "All materials" },
+  "nav.menu": { fr: "Menu", en: "Menu" },
+  "nav.openMenu": { fr: "Ouvrir le menu", en: "Open menu" },
+  "nav.browse": { fr: "Parcourir", en: "Browse" },
+  "nav.account": { fr: "Compte", en: "Account" },
 
   // -------------------------------------------------------------------- Commun
   "common.viewAll": { fr: "Voir tout", en: "View all" },
