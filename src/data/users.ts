@@ -16,8 +16,11 @@ export interface PlatformUser {
   equipments?: number;
 }
 
-/** Annuaire des utilisateurs, affiché dans l'administration. */
-const seedUsers: PlatformUser[] = [
+/**
+ * Annuaire de départ, affiché dans l'administration.
+ * Exporté pour que `scripts/generate-seed.mjs` produise le jeu de données SQL.
+ */
+export const seedUsers: PlatformUser[] = [
   {
     id: "1",
     name: "Jean Dupont",

@@ -120,6 +120,51 @@ un vrai catalogue.
 | `btp-orders` | Commandes passées depuis le tunnel |
 | `btp-language`, `btp-currency` | Préférences d'affichage |
 
+## Backend (en préparation)
+
+Le projet est prêt à être branché sur **Supabase**. Rien n'est encore connecté :
+sans variables d'environnement, l'application tourne sur les données de
+démonstration de `src/data/` et fonctionne telle quelle.
+
+```
+supabase/
+├── migrations/0001_schema.sql    Tables, index, recherche plein texte
+├── migrations/0002_policies.sql  Sécurité par ligne
+└── seed.sql                      Jeu de données initial (généré)
+```
+
+Le jeu de données initial est produit depuis le catalogue front, pour qu'il n'en
+diverge pas :
+
+```bash
+node scripts/generate-seed.mjs
+```
+
+### Mise en route
+
+1. Créer un projet sur [supabase.com](https://supabase.com).
+2. Exécuter `0001_schema.sql` puis `0002_policies.sql` dans l'éditeur SQL.
+3. Créer les trois comptes de démonstration dans **Authentication → Users**
+   (les emails attendus sont rappelés en tête de `seed.sql`).
+4. Exécuter `seed.sql`.
+5. Copier `.env.example` en `.env.local` et y coller l'URL du projet et la clé
+   `anon` (**Project Settings → API**).
+
+### Ce que la base change
+
+`equipment` et `listings` étaient deux jeux de données distincts décrivant le
+même objet — un héritage des données de démonstration. Ils sont fusionnés dans
+une seule table `equipment`, avec les colonnes de modération à côté de celles
+du catalogue.
+
+La table `bookings` n'avait pas d'équivalent côté front : réserver un
+équipement affichait une confirmation sans rien enregistrer.
+
+Surtout, l'autorisation change de camp. `PrivateRoute` ne fait que masquer des
+écrans : il suffit d'éditer le `localStorage` pour se déclarer administrateur.
+Les règles de `0002_policies.sql` sont appliquées par la base et ne peuvent pas
+être contournées depuis le navigateur.
+
 ## Limites connues
 
 - **Aucun backend.** Authentification, paiement, envoi de formulaires et suivi de
