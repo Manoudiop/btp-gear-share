@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
 import LanguageCurrencySwitcher from "./LanguageCurrencySwitcher";
+import SearchCommand from "./SearchCommand";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +51,7 @@ import {
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
@@ -66,10 +68,26 @@ const Navbar = () => {
   // Le menu compact doit se refermer quand la navigation aboutit.
   useEffect(() => setMobileOpen(false), [location.pathname, location.search]);
 
+  // Ctrl/⌘ + K ouvre la recherche depuis n'importe quelle page.
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setSearchOpen((previous) => !previous);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
+
+  // ⌘ sur Mac, Ctrl ailleurs.
+  const shortcutKey =
+    typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl ";
 
   // La barre ne se fond dans la page qu'au-dessus du hero de l'accueil.
   const isTransparent = location.pathname === "/" && !isScrolled;
@@ -184,10 +202,28 @@ const Navbar = () => {
             <LanguageCurrencySwitcher />
           </div>
 
-          <Button variant="ghost" size="icon" aria-label={t("nav.search")} asChild>
-            <Link to="/equipment">
-              <Search className="h-[18px] w-[18px]" />
-            </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label={t("nav.search")}
+            onClick={() => setSearchOpen(true)}
+            className="hidden h-9 gap-2 rounded-full pl-3 pr-2 text-muted-foreground md:inline-flex"
+          >
+            <Search className="h-4 w-4" />
+            <span className="text-sm font-normal">{t("nav.search")}</span>
+            <kbd className="ml-1 rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium">
+              {shortcutKey}K
+            </kbd>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("nav.search")}
+            onClick={() => setSearchOpen(true)}
+            className="md:hidden"
+          >
+            <Search className="h-[18px] w-[18px]" />
           </Button>
 
           <Button variant="ghost" size="icon" className="relative" aria-label={t("nav.cart")} asChild>
@@ -342,6 +378,8 @@ const Navbar = () => {
           </Sheet>
         </div>
       </div>
+
+      <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 };

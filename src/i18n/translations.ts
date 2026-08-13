@@ -31,6 +31,18 @@ export const translations: Record<string, Record<Language, string>> = {
   "nav.browse": { fr: "Parcourir", en: "Browse" },
   "nav.account": { fr: "Compte", en: "Account" },
 
+  // -------------------------------------------------------- Palette de recherche
+  "cmd.placeholder": {
+    fr: "Rechercher un équipement, un matériau, une page…",
+    en: "Search equipment, materials, pages…",
+  },
+  "cmd.empty": { fr: "Aucun résultat.", en: "No results." },
+  "cmd.equipment": { fr: "Équipements", en: "Equipment" },
+  "cmd.materials": { fr: "Matériaux", en: "Materials" },
+  "cmd.pages": { fr: "Pages", en: "Pages" },
+  "cmd.searchFor": { fr: "Rechercher « {query} »", en: "Search for “{query}”" },
+  "cmd.hint": { fr: "pour ouvrir la recherche", en: "to open search" },
+
   // -------------------------------------------------------------------- Commun
   "common.viewAll": { fr: "Voir tout", en: "View all" },
   "common.view": { fr: "Voir", en: "View" },
