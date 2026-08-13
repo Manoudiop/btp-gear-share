@@ -13,6 +13,8 @@ interface LanguageContextType {
   setCurrency: (curr: Currency) => void;
   t: (key: string, vars?: TranslateVars) => string;
   formatPrice: (amountEur: number) => string;
+  /** Symbole de la devise active, pour les libellés (« Prix (€) »…). */
+  currencySymbol: string;
   /** Locale BCP 47 correspondant à la langue active, pour les dates et les nombres. */
   locale: string;
 }
@@ -104,7 +106,16 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       return position === "before" ? `${symbol}${formatted}` : `${formatted} ${symbol}`;
     };
 
-    return { language, setLanguage, currency, setCurrency, t, formatPrice, locale };
+    return {
+      language,
+      setLanguage,
+      currency,
+      setCurrency,
+      t,
+      formatPrice,
+      currencySymbol: CURRENCY_SYMBOLS[currency].symbol,
+      locale,
+    };
   }, [language, currency, setLanguage, setCurrency]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

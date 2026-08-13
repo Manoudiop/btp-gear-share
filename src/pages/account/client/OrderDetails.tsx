@@ -19,34 +19,34 @@ import { getOrderById } from "@/data/orders";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
-const getStatusBadge = (status: string) => {
+const getStatusBadge = (status: string, t: (key: string) => string) => {
   switch (status) {
     case "pending":
       return (
         <Badge variant="secondary" className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          En attente
+          {t("ord.pending")}
         </Badge>
       );
     case "processing":
       return (
         <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-100 text-yellow-800">
           <Package className="h-3 w-3" />
-          En préparation
+          {t("ord.processing")}
         </Badge>
       );
     case "shipping":
       return (
         <Badge variant="secondary" className="flex items-center gap-1 bg-blue-100 text-blue-800">
           <Truck className="h-3 w-3" />
-          En livraison
+          {t("ord.shipping")}
         </Badge>
       );
     case "delivered":
       return (
         <Badge variant="secondary" className="flex items-center gap-1 bg-green-100 text-green-800">
           <CheckCircle className="h-3 w-3" />
-          Livrée
+          {t("ord.delivered")}
         </Badge>
       );
     default:
@@ -56,16 +56,16 @@ const getStatusBadge = (status: string) => {
 
 const OrderDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const { formatPrice } = useLanguage();
+  const { t, formatPrice } = useLanguage();
   const order = getOrderById(id);
 
   if (!order) {
     return (
-      <AccountLayout title="Commande introuvable">
+      <AccountLayout title={t("bo.orderNotFound")}>
         <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">Cette commande n'existe pas.</p>
+          <p className="text-muted-foreground mb-4">{t("ord.notFoundDesc")}</p>
           <Button asChild>
-            <Link to="/account/orders">Retour aux commandes</Link>
+            <Link to="/account/orders">{t("ord.backToOrders")}</Link>
           </Button>
         </div>
       </AccountLayout>
@@ -84,8 +84,8 @@ const OrderDetails = () => {
             </Link>
           </Button>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">Passée le {order.date}</span>
-            {getStatusBadge(order.status)}
+            <span className="text-sm text-muted-foreground">{t("ord.placedOn")} {order.date}</span>
+            {getStatusBadge(order.status, t)}
           </div>
         </div>
 
@@ -94,18 +94,18 @@ const OrderDetails = () => {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Truck className="h-5 w-5" />
-              Suivi de livraison
+              {t("ord.tracking")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {order.trackingNumber && (
               <p className="text-sm text-muted-foreground mb-4">
-                N° de suivi : <span className="font-medium text-foreground">{order.trackingNumber}</span>
+                {t("ord.trackingNumber")} : <span className="font-medium text-foreground">{order.trackingNumber}</span>
               </p>
             )}
             {order.estimatedDelivery && order.status !== "delivered" && (
               <p className="text-sm mb-6">
-                Livraison estimée : <span className="font-medium text-primary">{order.estimatedDelivery}</span>
+                {t("ord.estimatedDelivery")} : <span className="font-medium text-primary">{order.estimatedDelivery}</span>
               </p>
             )}
             
@@ -159,7 +159,7 @@ const OrderDetails = () => {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Articles commandés
+                {t("ord.items")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -174,7 +174,7 @@ const OrderDetails = () => {
                 ))}
                 <Separator className="my-3" />
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Sous-total</span>
+                  <span className="text-muted-foreground">{t("common.subtotal")}</span>
                   <span>{formatPrice(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -183,7 +183,7 @@ const OrderDetails = () => {
                 </div>
                 <Separator className="my-3" />
                 <div className="flex justify-between">
-                  <span className="font-medium">Total</span>
+                  <span className="font-medium">{t("common.total")}</span>
                   <span className="font-bold text-lg">{formatPrice(order.total)}</span>
                 </div>
               </div>
@@ -196,7 +196,7 @@ const OrderDetails = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
-                  Adresse de livraison
+                  {t("ord.shippingAddress")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -228,11 +228,11 @@ const OrderDetails = () => {
 
         {/* Actions */}
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline">Télécharger la facture</Button>
+          <Button variant="outline">{t("ord.downloadInvoice")}</Button>
           {order.status === "delivered" && (
-            <Button variant="outline">Recommander</Button>
+            <Button variant="outline">{t("ord.reorder")}</Button>
           )}
-          <Button variant="outline">Contacter le support</Button>
+          <Button variant="outline">{t("ord.contactSupport")}</Button>
         </div>
       </div>
     </AccountLayout>

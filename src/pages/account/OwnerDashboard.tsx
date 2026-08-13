@@ -4,21 +4,23 @@ import { CalendarDays, Building, CreditCard, Percent, TrendingUp, Package, Plus,
 import AccountLayout from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const OwnerDashboard = () => {
+  const { t, formatPrice } = useLanguage();
   return (
-    <AccountLayout title="Tableau de bord Loueur">
+    <AccountLayout title={t("bo.ownerDashboard")}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium flex items-center">
               <Building className="mr-2 h-5 w-5 text-primary" /> 
-              Équipements
+              {t("bo.equipment")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">12</p>
-            <p className="text-sm text-muted-foreground">Nombre total d'équipements</p>
+            <p className="text-sm text-muted-foreground">{t("dash.equipmentCount")}</p>
           </CardContent>
         </Card>
         
@@ -26,12 +28,12 @@ const OwnerDashboard = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium flex items-center">
               <Percent className="mr-2 h-5 w-5 text-primary" /> 
-              Taux d'occupation
+              {t("dash.occupancy")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">75%</p>
-            <p className="text-sm text-muted-foreground">Équipements actuellement loués</p>
+            <p className="text-sm text-muted-foreground">{t("dash.rentedNow")}</p>
           </CardContent>
         </Card>
         
@@ -39,12 +41,12 @@ const OwnerDashboard = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium flex items-center">
               <CreditCard className="mr-2 h-5 w-5 text-primary" /> 
-              Revenus
+              {t("dash.revenue")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">3,250€</p>
-            <p className="text-sm text-muted-foreground">Ce mois-ci</p>
+            <p className="text-3xl font-bold">{formatPrice(3250)}</p>
+            <p className="text-sm text-muted-foreground">{t("dash.thisMonth")}</p>
           </CardContent>
         </Card>
       </div>
@@ -53,10 +55,10 @@ const OwnerDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span className="text-lg font-medium">Locations actives</span>
+              <span className="text-lg font-medium">{t("dash.activeRentals")}</span>
               <Link to="/account/rentals">
                 <Button variant="link" size="sm" className="p-0 h-auto">
-                  Voir tout
+                  {t("common.viewAll")}
                 </Button>
               </Link>
             </CardTitle>
@@ -77,7 +79,7 @@ const OwnerDashboard = () => {
                   </div>
                 </div>
                 <Link to="/account/rentals">
-                  <Button variant="outline" size="sm">Détails</Button>
+                  <Button variant="outline" size="sm">{t("dash.details")}</Button>
                 </Link>
               </div>
               
@@ -95,7 +97,7 @@ const OwnerDashboard = () => {
                   </div>
                 </div>
                 <Link to="/account/rentals">
-                  <Button variant="outline" size="sm">Détails</Button>
+                  <Button variant="outline" size="sm">{t("dash.details")}</Button>
                 </Link>
               </div>
             </div>
@@ -105,10 +107,10 @@ const OwnerDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span className="text-lg font-medium">Revenus mensuels</span>
+              <span className="text-lg font-medium">{t("dash.monthlyRevenue")}</span>
               <Link to="/account/stats">
                 <Button variant="link" size="sm" className="p-0 h-auto">
-                  Voir tout
+                  {t("common.viewAll")}
                 </Button>
               </Link>
             </CardTitle>
@@ -118,10 +120,10 @@ const OwnerDashboard = () => {
               <div className="flex flex-col items-center space-y-2">
                 <TrendingUp className="h-8 w-8 text-primary" />
                 <p className="text-sm text-muted-foreground">
-                  Évolution des revenus sur les 6 derniers mois
+                  {t("dash.revenue6m")}
                 </p>
                 <p className="text-sm">
-                  +12% par rapport au mois précédent
+                  {t("dash.vsLastMonth")}
                 </p>
               </div>
             </div>
@@ -131,32 +133,32 @@ const OwnerDashboard = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-medium">Actions rapides</CardTitle>
+          <CardTitle className="text-lg font-medium">{t("dash.quickActions")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
             <Link to="/account/equipment/add">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Ajouter un équipement
+                {t("bo.addEquipment")}
               </Button>
             </Link>
             <Link to="/account/equipment">
               <Button variant="outline">
                 <Package className="mr-2 h-4 w-4" />
-                Gérer mes équipements
+                {t("dash.manageMyEquipment")}
               </Button>
             </Link>
             <Link to="/account/stats">
               <Button variant="outline">
                 <TrendingUp className="mr-2 h-4 w-4" />
-                Voir mes statistiques
+                {t("dash.viewMyStats")}
               </Button>
             </Link>
             <Link to="/account/settings">
               <Button variant="outline">
                 <Settings className="mr-2 h-4 w-4" />
-                Gérer mon profil
+                {t("dash.manageProfile")}
               </Button>
             </Link>
           </div>

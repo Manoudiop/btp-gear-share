@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { 
-  CheckCircle, AlertTriangle, MoreHorizontal, 
+import {
+  CheckCircle, AlertTriangle, MoreHorizontal,
   Edit, Trash2, Download, Filter, Search,
   Eye, Star, Building
 } from "lucide-react";
@@ -41,67 +41,87 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { listings, listingCategories } from "@/data/listings";
+import {
+  useListings,
+  listingCategories,
+  setListingStatus,
+  toggleListingFeatured,
+  removeListing,
+} from "@/data/listings";
+import type { ListingStatus } from "@/data/types";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 const ManageEquipment = () => {
+  const { t, formatPrice } = useLanguage();
+  const listings = useListings();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  
+
   const filteredEquipment = listings.filter(
     (item) => {
-      const matchesSearch = 
+      const matchesSearch =
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.owner.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = 
-        statusFilter === "all" || 
+
+      const matchesStatus =
+        statusFilter === "all" ||
         item.status === statusFilter;
-      
-      const matchesCategory = 
-        categoryFilter === "all" || 
+
+      const matchesCategory =
+        categoryFilter === "all" ||
         item.category.toLowerCase().includes(categoryFilter.toLowerCase());
-      
+
       return matchesSearch && matchesStatus && matchesCategory;
     }
   );
-  
-  const handleStatusChange = (id: string, newStatus: string) => {
+
+  const handleStatusChange = (id: string, newStatus: ListingStatus) => {
+    setListingStatus(id, newStatus);
     toast({
       title: "Statut modifié",
       description: `L'équipement a été ${newStatus === "approved" ? "approuvé" : newStatus === "rejected" ? "rejeté" : "mis en attente"}.`
     });
   };
-  
+
   const toggleFeatured = (id: string, currentFeatured: boolean) => {
+    toggleListingFeatured(id);
     toast({
       title: currentFeatured ? "Retiré des équipements mis en avant" : "Ajouté aux équipements mis en avant",
       description: "Le statut mis en avant a été modifié avec succès."
     });
   };
-  
+
+  const handleDelete = (id: string, name: string) => {
+    removeListing(id);
+    toast({
+      title: "Équipement supprimé",
+      description: `${name} a été retiré de la plateforme.`,
+    });
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Approuvé</Badge>;
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">{t("bo.approved")}</Badge>;
       case "pending":
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">En attente</Badge>;
+        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">{t("bo.pending")}</Badge>;
       case "rejected":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Rejeté</Badge>;
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">{t("bo.rejected")}</Badge>;
       default:
-        return <Badge variant="outline">Non défini</Badge>;
+        return <Badge variant="outline">{t("bo.undefined")}</Badge>;
     }
   };
 
   return (
-    <AccountLayout title="Gestion des équipements">
+    <AccountLayout title={t("bo.manageEquipment")}>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <CardTitle>Équipements</CardTitle>
+            <CardTitle>{t("bo.equipment")}</CardTitle>
             <CardDescription>
-              Gérez tous les équipements proposés sur la plateforme
+              {t("bo.manageEquipmentDesc")}
             </CardDescription>
           </div>
         </CardHeader>
@@ -111,7 +131,7 @@ const ManageEquipment = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher un équipement ou propriétaire..."
+                  placeholder={t("bo.searchEquipment")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -125,7 +145,7 @@ const ManageEquipment = () => {
                   <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes les catégories</SelectItem>
+                  <SelectItem value="all">{t("bo.allCategories")}</SelectItem>
                   {listingCategories.map((category) => (
                     <SelectItem key={category} value={category.toLowerCase()}>
                       {category}
@@ -141,10 +161,10 @@ const ManageEquipment = () => {
                   <SelectValue placeholder="Statut" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="approved">Approuvé</SelectItem>
-                  <SelectItem value="pending">En attente</SelectItem>
-                  <SelectItem value="rejected">Rejeté</SelectItem>
+                  <SelectItem value="all">{t("bo.allStatuses")}</SelectItem>
+                  <SelectItem value="approved">{t("bo.approved")}</SelectItem>
+                  <SelectItem value="pending">{t("bo.pending")}</SelectItem>
+                  <SelectItem value="rejected">{t("bo.rejected")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon">
@@ -153,29 +173,29 @@ const ManageEquipment = () => {
             </div>
             <Button variant="outline" size="sm" className="ml-auto">
               <Download className="mr-2 h-4 w-4" />
-              Exporter
+              {t("bo.export")}
             </Button>
           </div>
-          
+
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Équipement</TableHead>
-                  <TableHead>Propriétaire</TableHead>
-                  <TableHead>Catégorie</TableHead>
-                  <TableHead>Prix/jour</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Mis en avant</TableHead>
-                  <TableHead>Note</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("bo.equipment")}</TableHead>
+                  <TableHead>{t("bo.owner")}</TableHead>
+                  <TableHead>{t("bo.category")}</TableHead>
+                  <TableHead>{t("bo.pricePerDay")}</TableHead>
+                  <TableHead>{t("bo.status")}</TableHead>
+                  <TableHead>{t("bo.featured")}</TableHead>
+                  <TableHead>{t("bo.rating")}</TableHead>
+                  <TableHead className="text-right">{t("bo.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEquipment.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      Aucun équipement trouvé
+                      {t("bo.noEquipment")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -184,9 +204,9 @@ const ManageEquipment = () => {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-md">
-                            <img 
-                              src={equipment.image} 
-                              alt={equipment.name} 
+                            <img
+                              src={equipment.image}
+                              alt={equipment.name}
                               className="h-full w-full object-cover rounded-md"
                             />
                           </div>
@@ -202,13 +222,13 @@ const ManageEquipment = () => {
                         </Link>
                       </TableCell>
                       <TableCell>{equipment.category}</TableCell>
-                      <TableCell>{equipment.price} €</TableCell>
+                      <TableCell>{formatPrice(equipment.price)}</TableCell>
                       <TableCell>{getStatusBadge(equipment.status)}</TableCell>
                       <TableCell>
                         {equipment.featured ? (
-                          <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">Mis en avant</Badge>
+                          <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">{t("bo.featured")}</Badge>
                         ) : (
-                          <span className="text-muted-foreground text-sm">Non</span>
+                          <span className="text-muted-foreground text-sm">{t("bo.notFeatured")}</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -226,44 +246,45 @@ const ManageEquipment = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t("bo.actions")}</DropdownMenuLabel>
                             <DropdownMenuItem>
                               <Link to={`/equipment/${equipment.id}`} className="flex items-center w-full">
                                 <Eye className="mr-2 h-4 w-4" />
-                                <span>Voir</span>
+                                <span>{t("bo.view")}</span>
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Link to={`/account/equipment/${equipment.id}/edit`} className="flex items-center w-full">
                                 <Edit className="mr-2 h-4 w-4" />
-                                <span>Modifier</span>
+                                <span>{t("bo.edit")}</span>
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {equipment.status !== "approved" && (
                               <DropdownMenuItem onClick={() => handleStatusChange(equipment.id, "approved")}>
                                 <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                <span>Approuver</span>
+                                <span>{t("bo.approve")}</span>
                               </DropdownMenuItem>
                             )}
                             {equipment.status !== "pending" && (
                               <DropdownMenuItem onClick={() => handleStatusChange(equipment.id, "pending")}>
                                 <AlertTriangle className="mr-2 h-4 w-4 text-amber-600" />
-                                <span>Mettre en attente</span>
+                                <span>{t("bo.setPending")}</span>
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuItem onClick={() => toggleFeatured(equipment.id, equipment.featured)}>
                               <Star className="mr-2 h-4 w-4" fill={equipment.featured ? "currentColor" : "none"} />
                               <span>
-                                {equipment.featured ? "Retirer des mis en avant" : "Mettre en avant"}
+                                {equipment.featured ? t("bo.unfeature") : t("bo.feature")}
                               </span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
+                              onClick={() => handleDelete(equipment.id, equipment.name)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Supprimer</span>
+                              <span>{t("bo.delete")}</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

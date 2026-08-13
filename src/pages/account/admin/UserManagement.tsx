@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Plus, Edit, Trash2, MoreHorizontal, 
+import {
+  Plus, Edit, Trash2, MoreHorizontal,
   UserPlus, Download, Filter, Search,
   CheckCircle, AlertTriangle, Ban
 } from "lucide-react";
@@ -50,73 +50,80 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { users as usersData } from "@/data/users";
+import { useUsers, setUserStatus, removeUser } from "@/data/users";
+import type { UserStatus } from "@/data/users";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 const UserManagement = () => {
+  const { t } = useLanguage();
+  const usersData = useUsers();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  
+
   const filteredUsers = usersData.filter(
     (user) => {
-      const matchesSearch = 
+      const matchesSearch =
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesRole = 
-        roleFilter === "all" || 
+
+      const matchesRole =
+        roleFilter === "all" ||
         user.role === roleFilter;
-      
-      const matchesStatus = 
-        statusFilter === "all" || 
+
+      const matchesStatus =
+        statusFilter === "all" ||
         user.status === statusFilter;
-      
+
       return matchesSearch && matchesRole && matchesStatus;
     }
   );
-  
+
   const handleDelete = (id: string) => {
     setSelectedUserId(id);
     setIsDeleteDialogOpen(true);
   };
-  
+
   const confirmDelete = () => {
+    if (selectedUserId) removeUser(selectedUserId);
     toast({
-      title: "Utilisateur supprimé",
-      description: "L'utilisateur a été supprimé avec succès."
+      title: t("bo.userDeleted"),
+      description: t("bo.userDeletedDesc")
     });
     setIsDeleteDialogOpen(false);
+    setSelectedUserId(null);
   };
-  
-  const handleStatusChange = (id: string, newStatus: string) => {
-    const statusMessages = {
-      "active": "activé",
-      "inactive": "désactivé",
-      "suspended": "suspendu"
+
+  const handleStatusChange = (id: string, newStatus: UserStatus) => {
+    const statusMessages: Record<UserStatus, string> = {
+      active: "activé",
+      inactive: "désactivé",
+      suspended: "suspendu",
     };
-    
+
+    setUserStatus(id, newStatus);
     toast({
-      title: `Utilisateur ${statusMessages[newStatus as keyof typeof statusMessages]}`,
-      description: `Le statut de l'utilisateur a été mis à jour avec succès.`
+      title: `Utilisateur ${statusMessages[newStatus]}`,
+      description: "Le statut de l'utilisateur a été mis à jour avec succès.",
     });
   };
-  
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "admin":
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">Administrateur</Badge>;
+        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">{t("bo.roleAdmin")}</Badge>;
       case "owner":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Loueur</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">{t("bo.roleOwner")}</Badge>;
       case "client":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Client</Badge>;
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">{t("bo.roleClient")}</Badge>;
       default:
-        return <Badge variant="outline">Non défini</Badge>;
+        return <Badge variant="outline">{t("bo.undefined")}</Badge>;
     }
   };
-  
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "active":
@@ -131,18 +138,18 @@ const UserManagement = () => {
   };
 
   return (
-    <AccountLayout title="Gestion des utilisateurs">
+    <AccountLayout title={t("bo.manageUsers")}>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <CardTitle>Utilisateurs</CardTitle>
+            <CardTitle>{t("bo.users")}</CardTitle>
             <CardDescription>
-              Gérez tous les utilisateurs de la plateforme
+              {t("bo.manageUsersDesc")}
             </CardDescription>
           </div>
           <Button>
             <UserPlus className="mr-2 h-4 w-4" />
-            Ajouter un utilisateur
+            {t("bo.addUser")}
           </Button>
         </CardHeader>
         <CardContent>
@@ -151,7 +158,7 @@ const UserManagement = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher un utilisateur..."
+                  placeholder={t("bo.searchUser")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -165,10 +172,10 @@ const UserManagement = () => {
                   <SelectValue placeholder="Rôle" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les rôles</SelectItem>
-                  <SelectItem value="admin">Administrateur</SelectItem>
-                  <SelectItem value="owner">Loueur</SelectItem>
-                  <SelectItem value="client">Client</SelectItem>
+                  <SelectItem value="all">{t("bo.allRoles")}</SelectItem>
+                  <SelectItem value="admin">{t("bo.roleAdmin")}</SelectItem>
+                  <SelectItem value="owner">{t("bo.roleOwner")}</SelectItem>
+                  <SelectItem value="client">{t("bo.roleClient")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select
@@ -179,10 +186,10 @@ const UserManagement = () => {
                   <SelectValue placeholder="Statut" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="active">Actif</SelectItem>
-                  <SelectItem value="inactive">Inactif</SelectItem>
-                  <SelectItem value="suspended">Suspendu</SelectItem>
+                  <SelectItem value="all">{t("bo.allStatuses")}</SelectItem>
+                  <SelectItem value="active">{t("bo.statusActive")}</SelectItem>
+                  <SelectItem value="inactive">{t("bo.statusInactive")}</SelectItem>
+                  <SelectItem value="suspended">{t("bo.statusSuspended")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon">
@@ -191,21 +198,21 @@ const UserManagement = () => {
             </div>
             <Button variant="outline" size="sm" className="ml-auto">
               <Download className="mr-2 h-4 w-4" />
-              Exporter
+              {t("bo.export")}
             </Button>
           </div>
-          
+
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Date d'inscription</TableHead>
-                  <TableHead>Dernière connexion</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("bo.name")}</TableHead>
+                  <TableHead>{t("auth.email")}</TableHead>
+                  <TableHead>{t("bo.role")}</TableHead>
+                  <TableHead>{t("bo.status")}</TableHead>
+                  <TableHead>{t("bo.joinDate")}</TableHead>
+                  <TableHead>{t("bo.lastLogin")}</TableHead>
+                  <TableHead className="text-right">{t("bo.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -227,9 +234,9 @@ const UserManagement = () => {
                         <div className="flex items-center gap-2">
                           {getStatusIcon(user.status)}
                           <span className="capitalize">
-                            {user.status === "active" && "Actif"}
-                            {user.status === "inactive" && "Inactif"}
-                            {user.status === "suspended" && "Suspendu"}
+                            {user.status === "active" && t("bo.statusActive")}
+                            {user.status === "inactive" && t("bo.statusInactive")}
+                            {user.status === "suspended" && t("bo.statusSuspended")}
                           </span>
                         </div>
                       </TableCell>
@@ -244,7 +251,7 @@ const UserManagement = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t("bo.actions")}</DropdownMenuLabel>
                             <DropdownMenuItem>
                               <Link to={`/account/users/${user.id}`} className="flex items-center w-full">
                                 <Edit className="mr-2 h-4 w-4" />
@@ -255,27 +262,27 @@ const UserManagement = () => {
                             {user.status !== "active" ? (
                               <DropdownMenuItem onClick={() => handleStatusChange(user.id, "active")}>
                                 <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                <span>Activer</span>
+                                <span>{t("bo.activate")}</span>
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem onClick={() => handleStatusChange(user.id, "inactive")}>
                                 <AlertTriangle className="mr-2 h-4 w-4 text-amber-600" />
-                                <span>Désactiver</span>
+                                <span>{t("bo.deactivate")}</span>
                               </DropdownMenuItem>
                             )}
                             {user.status !== "suspended" ? (
                               <DropdownMenuItem onClick={() => handleStatusChange(user.id, "suspended")}>
                                 <Ban className="mr-2 h-4 w-4 text-red-600" />
-                                <span>Suspendre</span>
+                                <span>{t("bo.suspend")}</span>
                               </DropdownMenuItem>
                             ) : null}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
                               onClick={() => handleDelete(user.id)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Supprimer</span>
+                              <span>{t("bo.delete")}</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -288,11 +295,11 @@ const UserManagement = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogTitle>{t("bo.confirmDelete")}</DialogTitle>
             <DialogDescription>
               Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible et supprimera définitivement toutes les données associées à ce compte.
             </DialogDescription>

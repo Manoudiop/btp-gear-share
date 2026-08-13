@@ -5,6 +5,7 @@ import AccountLayout from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const userDistribution = [
   { name: "Clients", value: 75, color: "hsl(var(--primary))" },
@@ -22,20 +23,21 @@ const monthlyRevenue = [
 ];
 
 const AdminDashboard = () => {
+  const { t, formatPrice, currencySymbol } = useLanguage();
   return (
-    <AccountLayout title="Tableau de bord Administrateur">
+    <AccountLayout title={t("bo.adminDashboard")}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Link to="/account/users">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
                 <Users className="mr-2 h-5 w-5 text-primary" /> 
-                Utilisateurs
+                {t("bo.users")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">1,254</p>
-              <p className="text-sm text-muted-foreground">+12% ce mois</p>
+              <p className="text-sm text-muted-foreground">{t("dash.plus12")}</p>
             </CardContent>
           </Card>
         </Link>
@@ -45,12 +47,12 @@ const AdminDashboard = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
                 <Package className="mr-2 h-5 w-5 text-primary" /> 
-                Équipements
+                {t("bo.equipment")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">328</p>
-              <p className="text-sm text-muted-foreground">+8% ce mois</p>
+              <p className="text-sm text-muted-foreground">{t("dash.plus8")}</p>
             </CardContent>
           </Card>
         </Link>
@@ -60,12 +62,12 @@ const AdminDashboard = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
                 <Briefcase className="mr-2 h-5 w-5 text-primary" /> 
-                Matériaux
+                {t("bo.materials")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">48</p>
-              <p className="text-sm text-muted-foreground">Types disponibles</p>
+              <p className="text-sm text-muted-foreground">{t("dash.typesAvailable")}</p>
             </CardContent>
           </Card>
         </Link>
@@ -74,12 +76,12 @@ const AdminDashboard = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-medium flex items-center">
               <CreditCard className="mr-2 h-5 w-5 text-primary" /> 
-              Revenus
+              {t("dash.revenue")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">128,549€</p>
-            <p className="text-sm text-muted-foreground">Ce mois-ci</p>
+            <p className="text-3xl font-bold">{formatPrice(128549)}</p>
+            <p className="text-sm text-muted-foreground">{t("dash.thisMonth")}</p>
           </CardContent>
         </Card>
       </div>
@@ -87,7 +89,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium">Répartition des utilisateurs</CardTitle>
+            <CardTitle className="text-lg font-medium">{t("dash.userSplit")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-60">
@@ -116,7 +118,7 @@ const AdminDashboard = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium">Revenus mensuels</CardTitle>
+            <CardTitle className="text-lg font-medium">{t("dash.monthlyRevenue")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-60">
@@ -124,8 +126,8 @@ const AdminDashboard = () => {
                 <BarChart data={monthlyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))" }} />
-                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k€`} />
-                  <Tooltip formatter={(value: number) => `${value.toLocaleString()}€`} />
+                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k${currencySymbol}`} />
+                  <Tooltip formatter={(value: number) => formatPrice(value)} />
                   <Bar dataKey="revenue" name="Revenus" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -136,26 +138,26 @@ const AdminDashboard = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-medium">Actions rapides</CardTitle>
+          <CardTitle className="text-lg font-medium">{t("dash.quickActions")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
             <Link to="/account/users">
               <Button>
                 <UserCog className="mr-2 h-4 w-4" />
-                Gérer les utilisateurs
+                {t("dash.manageUsers")}
               </Button>
             </Link>
             <Link to="/account/admin/equipment">
               <Button variant="outline">
                 <Building className="mr-2 h-4 w-4" />
-                Gérer les équipements
+                {t("dash.manageEquipment")}
               </Button>
             </Link>
             <Link to="/account/materials">
               <Button variant="outline">
                 <Briefcase className="mr-2 h-4 w-4" />
-                Gérer les matériaux
+                {t("dash.manageMaterials")}
               </Button>
             </Link>
             <Link to="/account/settings">

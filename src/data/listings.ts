@@ -1,10 +1,11 @@
-import type { Listing } from "./types";
+import type { Listing, ListingStatus, ListingAvailability } from "./types";
+import { createStore, useStore } from "./store";
 
 // Annonces du parc de location, vues côté back-office.
 // Le loueur y voit sa disponibilité et ses revenus, l'administration y voit le
 // statut de modération et la mise en avant : un seul jeu de données pour les deux.
 
-export const listings: Listing[] = [
+const seedListings: Listing[] = [
   {
     id: "1",
     name: "Bétonnière 150L",
@@ -82,10 +83,39 @@ export const listings: Listing[] = [
   },
 ];
 
-/** Catégories du back-office, dérivées des annonces existantes. */
-export const listingCategories: string[] = Array.from(
-  new Set(listings.map((item) => item.category)),
-);
+const listingsStore = createStore("btp-listings", seedListings);
 
-/** Nombre de locations par annonce — utilisé par les graphiques du loueur. */
-export const rentalsByListing = listings.map(({ name, rentals }) => ({ name, rentals }));
+/** Annonces courantes, hors composant React. */
+export const getListings = (): Listing[] => listingsStore.get();
+
+/** Annonces courantes, avec re-rendu à chaque modification. */
+export const useListings = (): Listing[] => useStore(listingsStore);
+
+export const setListingStatus = (id: string, status: ListingStatus) =>
+  listingsStore.set((items) =>
+    items.map((item) => (item.id === id ? { ...item, status } : item)),
+  );
+
+export const setListingAvailability = (id: string, availability: ListingAvailability) =>
+  listingsStore.set((items) =>
+    items.map((item) => (item.id === id ? { ...item, availability } : item)),
+  );
+
+export const toggleListingFeatured = (id: string) =>
+  listingsStore.set((items) =>
+    items.map((item) => (item.id === id ? { ...item, featured: !item.featured } : item)),
+  );
+
+export const removeListing = (id: string) =>
+  listingsStore.set((items) => items.filter((item) => item.id !== id));
+
+export const addListing = (listing: Omit<Listing, "id">) =>
+  listingsStore.set((items) => [
+    { ...listing, id: `l-${Date.now()}` },
+    ...items,
+  ]);
+
+/** Catégories du back-office, dérivées des annonces de référence. */
+export const listingCategories: string[] = Array.from(
+  new Set(seedListings.map((item) => item.category)),
+);

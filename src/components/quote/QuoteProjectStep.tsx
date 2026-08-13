@@ -1,4 +1,4 @@
-
+import { useMemo } from "react";
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Select,
   SelectContent,
@@ -28,14 +29,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const projectSchema = z.object({
-  projectType: z.string().min(1, { message: "Type de projet requis" }),
-  projectLocation: z.string().min(1, { message: "Lieu du projet requis" }),
-  projectDuration: z.string().min(1, { message: "Durée du projet requise" }),
-  projectStartDate: z.string().min(1, { message: "Date de début requise" }),
-});
+const createProjectSchema = (t: (key: string) => string) =>
+  z.object({
+    projectType: z.string().min(1, { message: t("quote.error.projectType") }),
+    projectLocation: z.string().min(1, { message: t("quote.error.location") }),
+    projectDuration: z.string().min(1, { message: t("quote.error.duration") }),
+    projectStartDate: z.string().min(1, { message: t("quote.error.startDate") }),
+  });
 
-type ProjectFormValues = z.infer<typeof projectSchema>;
+type ProjectFormValues = z.infer<ReturnType<typeof createProjectSchema>>;
 
 interface QuoteProjectStepProps {
   formData: {
@@ -55,6 +57,9 @@ const QuoteProjectStep = ({
   onNext,
   onPrevious,
 }: QuoteProjectStepProps) => {
+  const { t } = useLanguage();
+  const projectSchema = useMemo(() => createProjectSchema(t), [t]);
+
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
@@ -72,7 +77,7 @@ const QuoteProjectStep = ({
 
   return (
     <div className="bg-white rounded-xl border p-6 md:p-8">
-      <h2 className="text-xl font-semibold mb-6">Détails de votre projet</h2>
+      <h2 className="text-xl font-semibold mb-6">{t("quote.projectTitle")}</h2>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -81,7 +86,7 @@ const QuoteProjectStep = ({
             name="projectType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Type de projet</FormLabel>
+                <FormLabel>{t("quote.projectType")}</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
@@ -90,16 +95,16 @@ const QuoteProjectStep = ({
                     <SelectTrigger className="w-full">
                       <div className="flex items-center">
                         <ClipboardList className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <SelectValue placeholder="Sélectionnez le type de projet" />
+                        <SelectValue placeholder={t("quote.projectTypePlaceholder")} />
                       </div>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="construction">Construction neuve</SelectItem>
-                    <SelectItem value="renovation">Rénovation</SelectItem>
-                    <SelectItem value="public">Travaux publics</SelectItem>
-                    <SelectItem value="industrial">Projet industriel</SelectItem>
-                    <SelectItem value="other">Autre</SelectItem>
+                    <SelectItem value="construction">{t("quote.type.construction")}</SelectItem>
+                    <SelectItem value="renovation">{t("quote.type.renovation")}</SelectItem>
+                    <SelectItem value="public">{t("quote.type.public")}</SelectItem>
+                    <SelectItem value="industrial">{t("quote.type.industrial")}</SelectItem>
+                    <SelectItem value="other">{t("quote.type.other")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -112,13 +117,13 @@ const QuoteProjectStep = ({
             name="projectLocation"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Lieu du projet</FormLabel>
+                <FormLabel>{t("quote.location")}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       {...field}
-                      placeholder="Adresse ou ville du projet"
+                      placeholder={t("quote.locationPlaceholder")}
                       className="pl-10"
                     />
                   </div>
@@ -133,7 +138,7 @@ const QuoteProjectStep = ({
             name="projectDuration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Durée estimée du projet</FormLabel>
+                <FormLabel>{t("quote.duration")}</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
@@ -142,17 +147,17 @@ const QuoteProjectStep = ({
                     <SelectTrigger className="w-full">
                       <div className="flex items-center">
                         <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                        <SelectValue placeholder="Sélectionnez une durée" />
+                        <SelectValue placeholder={t("quote.durationPlaceholder")} />
                       </div>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="less-than-1-week">Moins d'une semaine</SelectItem>
-                    <SelectItem value="1-2-weeks">1-2 semaines</SelectItem>
-                    <SelectItem value="2-4-weeks">2-4 semaines</SelectItem>
-                    <SelectItem value="1-3-months">1-3 mois</SelectItem>
-                    <SelectItem value="3-6-months">3-6 mois</SelectItem>
-                    <SelectItem value="more-than-6-months">Plus de 6 mois</SelectItem>
+                    <SelectItem value="less-than-1-week">{t("quote.duration.lt1w")}</SelectItem>
+                    <SelectItem value="1-2-weeks">{t("quote.duration.1to2w")}</SelectItem>
+                    <SelectItem value="2-4-weeks">{t("quote.duration.2to4w")}</SelectItem>
+                    <SelectItem value="1-3-months">{t("quote.duration.1to3m")}</SelectItem>
+                    <SelectItem value="3-6-months">{t("quote.duration.3to6m")}</SelectItem>
+                    <SelectItem value="more-than-6-months">{t("quote.duration.gt6m")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -165,7 +170,7 @@ const QuoteProjectStep = ({
             name="projectStartDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Date de début souhaitée</FormLabel>
+                <FormLabel>{t("quote.startDate")}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -188,13 +193,13 @@ const QuoteProjectStep = ({
               className="w-full sm:w-1/2"
               onClick={onPrevious}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Précédent
+              <ArrowLeft className="mr-2 h-4 w-4" /> {t("quote.previous")}
             </Button>
             <Button 
               type="submit" 
               className="w-full sm:w-1/2"
             >
-              Continuer <ArrowRight className="ml-2 h-4 w-4" />
+              {t("quote.continue")} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </form>

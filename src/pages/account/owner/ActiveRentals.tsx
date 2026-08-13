@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Mock data
 const rentalsData = [
@@ -98,6 +99,7 @@ const rentalsData = [
 ];
 
 const ActiveRentals = () => {
+  const { t, formatPrice } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   
@@ -132,15 +134,15 @@ const ActiveRentals = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">En cours</Badge>;
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">{t("ar.active")}</Badge>;
       case "upcoming":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">À venir</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">{t("ar.upcoming")}</Badge>;
       case "completed":
-        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Terminée</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">{t("ar.completed")}</Badge>;
       case "late":
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">En retard</Badge>;
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">{t("ar.late")}</Badge>;
       default:
-        return <Badge variant="outline">Non défini</Badge>;
+        return <Badge variant="outline">{t("bo.undefined")}</Badge>;
     }
   };
   
@@ -150,13 +152,13 @@ const ActiveRentals = () => {
   };
 
   return (
-    <AccountLayout title="Locations en cours">
+    <AccountLayout title={t("account.currentRentals")}>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <CardTitle>Gestion des locations</CardTitle>
+            <CardTitle>{t("ar.title")}</CardTitle>
             <CardDescription>
-              Suivez toutes vos locations actives, passées et à venir
+              {t("ar.desc")}
             </CardDescription>
           </div>
         </CardHeader>
@@ -166,7 +168,7 @@ const ActiveRentals = () => {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher un client ou équipement..."
+                  placeholder={t("ar.search")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -178,14 +180,14 @@ const ActiveRentals = () => {
                   onValueChange={setStatusFilter}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Statut" />
+                    <SelectValue placeholder={t("bo.status")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tous les statuts</SelectItem>
-                    <SelectItem value="active">En cours</SelectItem>
-                    <SelectItem value="upcoming">À venir</SelectItem>
-                    <SelectItem value="completed">Terminées</SelectItem>
-                    <SelectItem value="late">En retard</SelectItem>
+                    <SelectItem value="all">{t("bo.allStatuses")}</SelectItem>
+                    <SelectItem value="active">{t("ar.active")}</SelectItem>
+                    <SelectItem value="upcoming">{t("ar.upcoming")}</SelectItem>
+                    <SelectItem value="completed">{t("ar.completedPlural")}</SelectItem>
+                    <SelectItem value="late">{t("ar.late")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -195,7 +197,7 @@ const ActiveRentals = () => {
             </div>
             <Button variant="outline" size="sm" className="ml-auto">
               <Download className="mr-2 h-4 w-4" />
-              Exporter
+              {t("bo.export")}
             </Button>
           </div>
           
@@ -203,12 +205,12 @@ const ActiveRentals = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Équipement</TableHead>
-                  <TableHead>Période</TableHead>
-                  <TableHead>Prix</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("inc.client")}</TableHead>
+                  <TableHead>{t("bo.equipment")}</TableHead>
+                  <TableHead>{t("ar.period")}</TableHead>
+                  <TableHead>{t("ar.price")}</TableHead>
+                  <TableHead>{t("bo.status")}</TableHead>
+                  <TableHead className="text-right">{t("bo.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -239,7 +241,7 @@ const ActiveRentals = () => {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>{rental.totalPrice} €</TableCell>
+                      <TableCell>{formatPrice(rental.totalPrice)}</TableCell>
                       <TableCell>{getStatusBadge(rental.status)}</TableCell>
                       <TableCell className="text-right">
                         {rental.status === "active" && (
@@ -250,7 +252,7 @@ const ActiveRentals = () => {
                               onClick={() => handleContactClient(rental.phone)}
                             >
                               <MessageSquare className="mr-1 h-4 w-4" />
-                              <span className="hidden sm:inline">Contact</span>
+                              <span className="hidden sm:inline">{t("ar.contact")}</span>
                             </Button>
                             <Button 
                               variant="default" 
@@ -258,7 +260,7 @@ const ActiveRentals = () => {
                               onClick={() => handleConfirmReturn(rental.id)}
                             >
                               <Check className="mr-1 h-4 w-4" />
-                              <span className="hidden sm:inline">Retour</span>
+                              <span className="hidden sm:inline">{t("ar.return")}</span>
                             </Button>
                           </div>
                         )}
@@ -270,11 +272,11 @@ const ActiveRentals = () => {
                               onClick={() => handleContactClient(rental.phone)}
                             >
                               <MessageSquare className="mr-1 h-4 w-4" />
-                              <span className="hidden sm:inline">Contact</span>
+                              <span className="hidden sm:inline">{t("ar.contact")}</span>
                             </Button>
                             <Button variant="default" size="sm">
                               <Clock className="mr-1 h-4 w-4" />
-                              <span className="hidden sm:inline">Rappel</span>
+                              <span className="hidden sm:inline">{t("ar.remind")}</span>
                             </Button>
                           </div>
                         )}
@@ -285,7 +287,7 @@ const ActiveRentals = () => {
                               size="sm"
                             >
                               <CheckCircle2 className="mr-1 h-4 w-4 text-green-600" />
-                              <span className="hidden sm:inline text-muted-foreground">Terminée</span>
+                              <span className="hidden sm:inline text-muted-foreground">{t("ar.completed")}</span>
                             </Button>
                           </div>
                         )}
@@ -297,7 +299,7 @@ const ActiveRentals = () => {
                               onClick={() => handleContactClient(rental.phone)}
                             >
                               <AlertCircle className="mr-1 h-4 w-4 text-red-600" />
-                              <span className="hidden sm:inline">Urgent</span>
+                              <span className="hidden sm:inline">{t("ar.urgent")}</span>
                             </Button>
                             <Button 
                               variant="default" 
@@ -305,7 +307,7 @@ const ActiveRentals = () => {
                               onClick={() => handleConfirmReturn(rental.id)}
                             >
                               <Check className="mr-1 h-4 w-4" />
-                              <span className="hidden sm:inline">Retour</span>
+                              <span className="hidden sm:inline">{t("ar.return")}</span>
                             </Button>
                           </div>
                         )}

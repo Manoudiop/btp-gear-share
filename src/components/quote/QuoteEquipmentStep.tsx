@@ -1,4 +1,4 @@
-
+import { useMemo } from "react";
 import { 
   ArrowLeft, 
   Truck, 
@@ -20,6 +20,7 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -29,24 +30,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const equipmentSchema = z.object({
-  equipmentTypes: z.array(z.string()).min(1, { message: "Sélectionnez au moins un type d'équipement" }),
-  equipmentDuration: z.string().min(1, { message: "Durée de location requise" }),
-  equipmentQuantity: z.coerce.number().min(1, { message: "La quantité doit être d'au moins 1" }),
-  additionalRequirements: z.string().optional(),
-});
+const createEquipmentSchema = (t: (key: string) => string) =>
+  z.object({
+    equipmentTypes: z.array(z.string()).min(1, { message: t("quote.error.equipmentTypes") }),
+    equipmentDuration: z.string().min(1, { message: t("quote.error.rentalDuration") }),
+    equipmentQuantity: z.coerce.number().min(1, { message: t("quote.error.quantity") }),
+    additionalRequirements: z.string().optional(),
+  });
 
-type EquipmentFormValues = z.infer<typeof equipmentSchema>;
+type EquipmentFormValues = z.infer<ReturnType<typeof createEquipmentSchema>>;
 
 const equipmentOptions = [
-  { id: "excavator", label: "Pelleteuses" },
-  { id: "truck", label: "Camions" },
-  { id: "scaffold", label: "Échafaudages" },
-  { id: "breaker", label: "Marteaux piqueurs" },
-  { id: "mixer", label: "Bétonnières" },
-  { id: "tools", label: "Outillage" },
-  { id: "crane", label: "Grues" },
-  { id: "compressor", label: "Compresseurs" },
+  { id: "excavator", labelKey: "category.Pelleteuses" },
+  { id: "truck", labelKey: "category.Camions" },
+  { id: "scaffold", labelKey: "category.Échafaudages" },
+  { id: "breaker", labelKey: "category.Marteaux piqueurs" },
+  { id: "mixer", labelKey: "category.Bétonnières" },
+  { id: "tools", labelKey: "category.Outillage" },
+  { id: "crane", labelKey: "quote.equip.crane" },
+  { id: "compressor", labelKey: "quote.equip.compressor" },
 ];
 
 interface QuoteEquipmentStepProps {
@@ -69,6 +71,9 @@ const QuoteEquipmentStep = ({
   onPrevious,
   isSubmitting,
 }: QuoteEquipmentStepProps) => {
+  const { t } = useLanguage();
+  const equipmentSchema = useMemo(() => createEquipmentSchema(t), [t]);
+
   const form = useForm<EquipmentFormValues>({
     resolver: zodResolver(equipmentSchema),
     defaultValues: {
@@ -86,7 +91,7 @@ const QuoteEquipmentStep = ({
 
   return (
     <div className="bg-white rounded-xl border p-6 md:p-8">
-      <h2 className="text-xl font-semibold mb-6">Besoins en équipement</h2>
+      <h2 className="text-xl font-semibold mb-6">{t("quote.equipmentTitle")}</h2>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -95,7 +100,7 @@ const QuoteEquipmentStep = ({
             name="equipmentTypes"
             render={() => (
               <FormItem>
-                <FormLabel>Types d'équipements nécessaires</FormLabel>
+                <FormLabel>{t("quote.equipmentTypes")}</FormLabel>
                 <FormDescription>
                   Sélectionnez tous les types d'équipements dont vous avez besoin
                 </FormDescription>
@@ -126,7 +131,7 @@ const QuoteEquipmentStep = ({
                               />
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">
-                              {option.label}
+                              {t(option.labelKey)}
                             </FormLabel>
                           </FormItem>
                         )
@@ -145,7 +150,7 @@ const QuoteEquipmentStep = ({
               name="equipmentDuration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Durée de location prévue</FormLabel>
+                  <FormLabel>{t("quote.rentalDuration")}</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
@@ -154,16 +159,16 @@ const QuoteEquipmentStep = ({
                       <SelectTrigger>
                         <div className="flex items-center">
                           <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                          <SelectValue placeholder="Sélectionnez une durée" />
+                          <SelectValue placeholder={t("quote.durationPlaceholder")} />
                         </div>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="daily">Journalière</SelectItem>
-                      <SelectItem value="weekly">Hebdomadaire</SelectItem>
-                      <SelectItem value="biweekly">Bi-hebdomadaire</SelectItem>
-                      <SelectItem value="monthly">Mensuelle</SelectItem>
-                      <SelectItem value="quarterly">Trimestrielle</SelectItem>
+                      <SelectItem value="daily">{t("quote.rental.daily")}</SelectItem>
+                      <SelectItem value="weekly">{t("quote.rental.weekly")}</SelectItem>
+                      <SelectItem value="biweekly">{t("quote.rental.biweekly")}</SelectItem>
+                      <SelectItem value="monthly">{t("quote.rental.monthly")}</SelectItem>
+                      <SelectItem value="quarterly">{t("quote.rental.quarterly")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -176,7 +181,7 @@ const QuoteEquipmentStep = ({
               name="equipmentQuantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantité approximative</FormLabel>
+                  <FormLabel>{t("quote.quantity")}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Truck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -199,10 +204,10 @@ const QuoteEquipmentStep = ({
             name="additionalRequirements"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Exigences supplémentaires (facultatif)</FormLabel>
+                <FormLabel>{t("quote.extra")}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Décrivez toute exigence spécifique ou information complémentaire concernant votre besoin en équipement"
+                    placeholder={t("quote.extraPlaceholder")}
                     className="min-h-[120px]"
                     {...field}
                   />
@@ -220,7 +225,7 @@ const QuoteEquipmentStep = ({
               onClick={onPrevious}
               disabled={isSubmitting}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Précédent
+              <ArrowLeft className="mr-2 h-4 w-4" /> {t("quote.previous")}
             </Button>
             <Button 
               type="submit" 
@@ -229,11 +234,11 @@ const QuoteEquipmentStep = ({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Envoi en cours...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("quote.submitting")}
                 </>
               ) : (
                 <>
-                  <Check className="mr-2 h-4 w-4" /> Soumettre la demande
+                  <Check className="mr-2 h-4 w-4" /> {t("quote.submit")}
                 </>
               )}
             </Button>

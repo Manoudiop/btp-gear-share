@@ -9,8 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const AccountSettings = () => {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -70,12 +72,12 @@ const AccountSettings = () => {
   };
   
   return (
-    <AccountLayout title="Paramètres du compte">
+    <AccountLayout title={t("bo.accountSettings")}>
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-          <TabsTrigger value="profile">Profil</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="security">Sécurité</TabsTrigger>
+          <TabsTrigger value="profile">{t("set.profile")}</TabsTrigger>
+          <TabsTrigger value="notifications">{t("set.notifications")}</TabsTrigger>
+          <TabsTrigger value="security">{t("set.security")}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="profile">
@@ -83,16 +85,16 @@ const AccountSettings = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <User className="mr-2 h-5 w-5 text-primary" />
-                Informations personnelles
+                {t("set.personalInfo")}
               </CardTitle>
               <CardDescription>
-                Gérez vos informations de profil
+                {t("set.personalInfoDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nom complet</Label>
+                  <Label htmlFor="name">{t("contact.fullName")}</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
@@ -105,7 +107,7 @@ const AccountSettings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("auth.email")}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
@@ -119,7 +121,7 @@ const AccountSettings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone</Label>
+                  <Label htmlFor="phone">{t("contact.phone")}</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
@@ -132,7 +134,7 @@ const AccountSettings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="address">Adresse</Label>
+                  <Label htmlFor="address">{t("set.address")}</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
@@ -145,7 +147,7 @@ const AccountSettings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
+                  <Label htmlFor="city">{t("checkout.city")}</Label>
                   <Input 
                     id="city" 
                     value={profile.city}
@@ -154,7 +156,7 @@ const AccountSettings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="postalCode">Code postal</Label>
+                  <Label htmlFor="postalCode">{t("checkout.postalCode")}</Label>
                   <Input 
                     id="postalCode" 
                     value={profile.postalCode}
@@ -165,7 +167,7 @@ const AccountSettings = () => {
               
               <Button onClick={handleProfileSave}>
                 <Save className="mr-2 h-4 w-4" />
-                Enregistrer les modifications
+                {t("set.saveChanges")}
               </Button>
             </CardContent>
           </Card>
@@ -176,18 +178,18 @@ const AccountSettings = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Bell className="mr-2 h-5 w-5 text-primary" />
-                Préférences de notification
+                {t("set.notifPrefs")}
               </CardTitle>
               <CardDescription>
-                Configurez comment vous souhaitez être notifié
+                {t("set.notifPrefsDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Notifications par email</p>
-                    <p className="text-sm text-muted-foreground">Recevoir les notifications par email</p>
+                    <p className="font-medium">{t("set.emailNotif")}</p>
+                    <p className="text-sm text-muted-foreground">{t("set.emailNotifDesc")}</p>
                   </div>
                   <Switch 
                     checked={notifications.email}
@@ -197,8 +199,8 @@ const AccountSettings = () => {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Notifications SMS</p>
-                    <p className="text-sm text-muted-foreground">Recevoir les notifications par SMS</p>
+                    <p className="font-medium">{t("set.smsNotif")}</p>
+                    <p className="text-sm text-muted-foreground">{t("set.smsNotifDesc")}</p>
                   </div>
                   <Switch 
                     checked={notifications.sms}
@@ -208,8 +210,8 @@ const AccountSettings = () => {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Nouvelles locations</p>
-                    <p className="text-sm text-muted-foreground">Être notifié des nouvelles demandes de location</p>
+                    <p className="font-medium">{t("set.newRentals")}</p>
+                    <p className="text-sm text-muted-foreground">{t("set.newRentalsDesc")}</p>
                   </div>
                   <Switch 
                     checked={notifications.newRental}
@@ -219,8 +221,8 @@ const AccountSettings = () => {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Messages</p>
-                    <p className="text-sm text-muted-foreground">Être notifié des nouveaux messages</p>
+                    <p className="font-medium">{t("set.messages")}</p>
+                    <p className="text-sm text-muted-foreground">{t("set.messagesDesc")}</p>
                   </div>
                   <Switch 
                     checked={notifications.messages}
@@ -230,8 +232,8 @@ const AccountSettings = () => {
                 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Promotions et offres</p>
-                    <p className="text-sm text-muted-foreground">Recevoir les offres spéciales et promotions</p>
+                    <p className="font-medium">{t("set.promos")}</p>
+                    <p className="text-sm text-muted-foreground">{t("set.promosDesc")}</p>
                   </div>
                   <Switch 
                     checked={notifications.promotions}
@@ -242,7 +244,7 @@ const AccountSettings = () => {
               
               <Button onClick={handleNotificationsSave}>
                 <Save className="mr-2 h-4 w-4" />
-                Enregistrer les préférences
+                {t("set.savePrefs")}
               </Button>
             </CardContent>
           </Card>
@@ -253,16 +255,16 @@ const AccountSettings = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Lock className="mr-2 h-5 w-5 text-primary" />
-                Sécurité du compte
+                {t("set.accountSecurity")}
               </CardTitle>
               <CardDescription>
-                Modifiez votre mot de passe
+                {t("set.changePasswordDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4 max-w-md">
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Mot de passe actuel</Label>
+                  <Label htmlFor="currentPassword">{t("set.currentPassword")}</Label>
                   <Input 
                     id="currentPassword" 
                     type="password"
@@ -272,7 +274,7 @@ const AccountSettings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                  <Label htmlFor="newPassword">{t("set.newPassword")}</Label>
                   <Input 
                     id="newPassword" 
                     type="password"
@@ -282,7 +284,7 @@ const AccountSettings = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                  <Label htmlFor="confirmPassword">{t("auth.confirmPassword")}</Label>
                   <Input 
                     id="confirmPassword" 
                     type="password"
@@ -294,7 +296,7 @@ const AccountSettings = () => {
               
               <Button onClick={handlePasswordSave}>
                 <Lock className="mr-2 h-4 w-4" />
-                Modifier le mot de passe
+                {t("set.changePassword")}
               </Button>
             </CardContent>
           </Card>

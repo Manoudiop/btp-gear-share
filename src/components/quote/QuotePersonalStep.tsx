@@ -1,4 +1,5 @@
 
+import { useMemo } from "react";
 import { 
   User, 
   Mail, 
@@ -19,15 +20,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const personalSchema = z.object({
-  fullName: z.string().min(2, { message: "Le nom est requis" }),
-  email: z.string().email({ message: "Adresse email invalide" }),
-  phone: z.string().min(10, { message: "Numéro de téléphone invalide" }),
-  company: z.string().optional(),
-});
+const createPersonalSchema = (t: (key: string) => string) =>
+  z.object({
+    fullName: z.string().min(2, { message: t("quote.error.fullName") }),
+    email: z.string().email({ message: t("auth.error.email") }),
+    phone: z.string().min(10, { message: t("quote.error.phone") }),
+    company: z.string().optional(),
+  });
 
-type PersonalFormValues = z.infer<typeof personalSchema>;
+type PersonalFormValues = z.infer<ReturnType<typeof createPersonalSchema>>;
 
 interface QuotePersonalStepProps {
   formData: {
@@ -45,6 +48,9 @@ const QuotePersonalStep = ({
   updateFormData,
   onNext,
 }: QuotePersonalStepProps) => {
+  const { t } = useLanguage();
+  const personalSchema = useMemo(() => createPersonalSchema(t), [t]);
+
   const form = useForm<PersonalFormValues>({
     resolver: zodResolver(personalSchema),
     defaultValues: {
@@ -62,7 +68,7 @@ const QuotePersonalStep = ({
 
   return (
     <div className="bg-white rounded-xl border p-6 md:p-8">
-      <h2 className="text-xl font-semibold mb-6">Vos informations personnelles</h2>
+      <h2 className="text-xl font-semibold mb-6">{t("quote.personalTitle")}</h2>
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -71,13 +77,13 @@ const QuotePersonalStep = ({
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nom complet</FormLabel>
+                <FormLabel>{t("quote.fullName")}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       {...field}
-                      placeholder="Entrez votre nom complet"
+                      placeholder={t("quote.fullNamePlaceholder")}
                       className="pl-10"
                     />
                   </div>
@@ -92,7 +98,7 @@ const QuotePersonalStep = ({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("auth.email")}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -114,13 +120,13 @@ const QuotePersonalStep = ({
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Téléphone</FormLabel>
+                <FormLabel>{t("contact.phone")}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       {...field}
-                      placeholder="Votre numéro de téléphone"
+                      placeholder={t("quote.phonePlaceholder")}
                       className="pl-10"
                     />
                   </div>
@@ -135,13 +141,13 @@ const QuotePersonalStep = ({
             name="company"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Entreprise (facultatif)</FormLabel>
+                <FormLabel>{t("quote.company")}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       {...field}
-                      placeholder="Nom de votre entreprise"
+                      placeholder={t("quote.companyPlaceholder")}
                       className="pl-10"
                     />
                   </div>
@@ -152,7 +158,7 @@ const QuotePersonalStep = ({
           />
           
           <Button type="submit" className="w-full mt-6">
-            Continuer <ArrowRight className="ml-2 h-4 w-4" />
+            {t("quote.continue")} <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </form>
       </Form>

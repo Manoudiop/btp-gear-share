@@ -40,7 +40,8 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { listingCategories, listings, rentalsByListing } from "@/data/listings";
+import { listingCategories, useListings } from "@/data/listings";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const revenueData = [
   { name: "Jan", revenue: 1200 },
@@ -57,42 +58,46 @@ const revenueData = [
   { name: "Dec", revenue: 2700 },
 ];
 
-// Répartition des locations par catégorie, calculée depuis le parc du loueur.
-const totalRentals = listings.reduce((sum, item) => sum + item.rentals, 0);
-const categoryData = listingCategories.map((category) => ({
-  name: category,
-  value: Math.round(
-    (listings
-      .filter((item) => item.category === category)
-      .reduce((sum, item) => sum + item.rentals, 0) /
-      totalRentals) *
-      100,
-  ),
-}));
-
-const equipmentData = rentalsByListing;
-
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 const Stats = () => {
+  const { t, formatPrice } = useLanguage();
+  const listings = useListings();
   const [timeRange, setTimeRange] = useState("year");
 
+  // Répartition des locations par catégorie, recalculée quand le parc change.
+  const totalRentals = listings.reduce((sum, item) => sum + item.rentals, 0) || 1;
+  const categoryData = listingCategories
+    .map((category) => ({
+      name: category,
+      value: Math.round(
+        (listings
+          .filter((item) => item.category === category)
+          .reduce((sum, item) => sum + item.rentals, 0) /
+          totalRentals) *
+          100,
+      ),
+    }))
+    .filter((entry) => entry.value > 0);
+
+  const equipmentData = listings.map(({ name, rentals }) => ({ name, rentals }));
+
   return (
-    <AccountLayout title="Statistiques">
+    <AccountLayout title={t("account.stats")}>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Aperçu de performance</h1>
+        <h1 className="text-2xl font-bold">{t("st.overview")}</h1>
         <Select
           value={timeRange}
           onValueChange={setTimeRange}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Période" />
+            <SelectValue placeholder={t("inc.period")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="week">7 derniers jours</SelectItem>
-            <SelectItem value="month">30 derniers jours</SelectItem>
-            <SelectItem value="quarter">3 derniers mois</SelectItem>
-            <SelectItem value="year">Année en cours</SelectItem>
+            <SelectItem value="week">{t("st.last7")}</SelectItem>
+            <SelectItem value="month">{t("st.last30")}</SelectItem>
+            <SelectItem value="quarter">{t("st.last3m")}</SelectItem>
+            <SelectItem value="year">{t("st.thisYear")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -100,24 +105,24 @@ const Stats = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenu Total</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("st.totalRevenue")}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23,540 €</div>
+            <div className="text-2xl font-bold">{formatPrice(23540)}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-500 inline-flex items-center mr-1">
                 <ArrowUpRight className="h-3 w-3 mr-1" />
                 +12.5%
               </span>
-              vs période précédente
+              {t("st.vsPrevious")}
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Locations</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("st.rentals")}</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -127,14 +132,14 @@ const Stats = () => {
                 <ArrowUpRight className="h-3 w-3 mr-1" />
                 +8.2%
               </span>
-              vs période précédente
+              {t("st.vsPrevious")}
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux d'occupation</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("st.occupancy")}</CardTitle>
             <Percent className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -144,14 +149,14 @@ const Stats = () => {
                 <ArrowUpRight className="h-3 w-3 mr-1" />
                 +4.3%
               </span>
-              vs période précédente
+              {t("st.vsPrevious")}
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clients</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("st.customers")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -161,7 +166,7 @@ const Stats = () => {
                 <ArrowDownRight className="h-3 w-3 mr-1" />
                 -2.1%
               </span>
-              vs période précédente
+              {t("st.vsPrevious")}
             </p>
           </CardContent>
         </Card>
@@ -169,17 +174,17 @@ const Stats = () => {
 
       <Tabs defaultValue="revenue" className="mb-8">
         <TabsList className="grid w-full grid-cols-3 mb-4">
-          <TabsTrigger value="revenue">Revenus</TabsTrigger>
-          <TabsTrigger value="equipment">Performance équipements</TabsTrigger>
-          <TabsTrigger value="categories">Répartition par catégorie</TabsTrigger>
+          <TabsTrigger value="revenue">{t("st.tabRevenue")}</TabsTrigger>
+          <TabsTrigger value="equipment">{t("st.tabEquipment")}</TabsTrigger>
+          <TabsTrigger value="categories">{t("st.tabCategories")}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="revenue">
           <Card>
             <CardHeader>
-              <CardTitle>Évolution des revenus</CardTitle>
+              <CardTitle>{t("st.revenueTrend")}</CardTitle>
               <CardDescription>
-                Analyse de vos revenus sur les 12 derniers mois
+                {t("st.revenueTrendDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="px-2">
@@ -215,9 +220,9 @@ const Stats = () => {
         <TabsContent value="equipment">
           <Card>
             <CardHeader>
-              <CardTitle>Performance par équipement</CardTitle>
+              <CardTitle>{t("st.byEquipment")}</CardTitle>
               <CardDescription>
-                Les équipements les plus loués
+                {t("st.byEquipmentDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent className="px-2">
@@ -256,9 +261,9 @@ const Stats = () => {
         <TabsContent value="categories">
           <Card>
             <CardHeader>
-              <CardTitle>Revenus par catégorie</CardTitle>
+              <CardTitle>{t("st.byCategory")}</CardTitle>
               <CardDescription>
-                Répartition des revenus par catégorie d'équipement
+                {t("st.byCategoryDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -292,9 +297,9 @@ const Stats = () => {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Durée moyenne de location</CardTitle>
+            <CardTitle>{t("st.avgDuration")}</CardTitle>
             <CardDescription>
-              Analyse de la durée des locations
+              {t("st.avgDurationDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-center p-6">
@@ -304,7 +309,7 @@ const Stats = () => {
               </div>
               <div className="mt-6 text-center">
                 <div className="text-4xl font-bold">4.5</div>
-                <div className="text-sm text-muted-foreground">Jours par location</div>
+                <div className="text-sm text-muted-foreground">{t("st.daysPerRental")}</div>
               </div>
             </div>
           </CardContent>
@@ -312,9 +317,9 @@ const Stats = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Prochaines réservations</CardTitle>
+            <CardTitle>{t("st.upcoming")}</CardTitle>
             <CardDescription>
-              Les locations à venir ce mois-ci
+              {t("st.upcomingDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -331,7 +336,7 @@ const Stats = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">450 €</div>
+                    <div className="font-medium">{formatPrice(450)}</div>
                     <div className="text-sm text-muted-foreground">5 jours</div>
                   </div>
                 </div>

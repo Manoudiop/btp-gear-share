@@ -28,6 +28,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const categories = [
   { id: "gros-oeuvre", name: "Gros œuvre" },
@@ -41,6 +42,7 @@ const categories = [
 ];
 
 const AddEquipment = () => {
+  const { t, currencySymbol } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [equipmentData, setEquipmentData] = useState({
@@ -95,13 +97,13 @@ const AddEquipment = () => {
   };
 
   return (
-    <AccountLayout title="Ajouter un équipement">
+    <AccountLayout title={t("bo.addEquipment")}>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Informations de base</CardTitle>
+                <CardTitle>{t("add.basicInfo")}</CardTitle>
                 <CardDescription>
                   Les informations essentielles sur votre équipement
                 </CardDescription>
@@ -114,7 +116,7 @@ const AddEquipment = () => {
                   <Input
                     id="name"
                     name="name"
-                    placeholder="Ex: Bétonnière 150L"
+                    placeholder={t("add.namePlaceholder")}
                     value={equipmentData.name}
                     onChange={handleChange}
                     required
@@ -128,7 +130,7 @@ const AddEquipment = () => {
                   <Textarea
                     id="description"
                     name="description"
-                    placeholder="Décrivez votre équipement en détail (caractéristiques, état, etc.)"
+                    placeholder={t("add.descPlaceholder")}
                     value={equipmentData.description}
                     onChange={handleChange}
                     rows={6}
@@ -147,7 +149,7 @@ const AddEquipment = () => {
                       required
                     >
                       <SelectTrigger id="category">
-                        <SelectValue placeholder="Sélectionner une catégorie" />
+                        <SelectValue placeholder={t("add.categoryPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((category) => (
@@ -168,7 +170,7 @@ const AddEquipment = () => {
                       <Input
                         id="location"
                         name="location"
-                        placeholder="Ville, Code postal"
+                        placeholder={t("add.locationPlaceholder")}
                         value={equipmentData.location}
                         onChange={handleChange}
                         className="pl-9"
@@ -182,7 +184,7 @@ const AddEquipment = () => {
             
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Prix et conditions</CardTitle>
+                <CardTitle>{t("add.pricing")}</CardTitle>
                 <CardDescription>
                   Définissez les tarifs et conditions de location
                 </CardDescription>
@@ -191,7 +193,7 @@ const AddEquipment = () => {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="price">
-                      Prix journalier (€) <span className="text-destructive">*</span>
+                      Prix journalier ({currencySymbol}) <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
                       <DollarSign className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -212,7 +214,7 @@ const AddEquipment = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="deposit">
-                      Caution (€) <span className="text-destructive">*</span>
+                      Caution ({currencySymbol}) <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
                       <DollarSign className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -254,7 +256,7 @@ const AddEquipment = () => {
                 <div className="flex flex-col gap-4 pt-2">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="available">Disponible immédiatement</Label>
+                      <Label htmlFor="available">{t("add.availableNow")}</Label>
                       <p className="text-sm text-muted-foreground">
                         L'équipement pourra être loué immédiatement
                       </p>
@@ -270,7 +272,7 @@ const AddEquipment = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="featured">Mettre en avant</Label>
+                      <Label htmlFor="featured">{t("add.feature")}</Label>
                       <p className="text-sm text-muted-foreground">
                         L'équipement sera mis en avant sur la page d'accueil
                       </p>
@@ -289,7 +291,7 @@ const AddEquipment = () => {
           <div className="lg:col-span-1">
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Photos de l'équipement</CardTitle>
+                <CardTitle>{t("add.photos")}</CardTitle>
                 <CardDescription>
                   Ajoutez des photos claires de votre équipement
                 </CardDescription>
@@ -313,28 +315,28 @@ const AddEquipment = () => {
             
             <Card>
               <CardHeader>
-                <CardTitle>Spécifications techniques</CardTitle>
+                <CardTitle>{t("add.specs")}</CardTitle>
                 <CardDescription>
                   Ajoutez des informations techniques détaillées
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="specs">Caractéristiques techniques</Label>
+                  <Label htmlFor="specs">{t("add.specsLabel")}</Label>
                   <Textarea
                     id="specs"
                     name="specs"
-                    placeholder="Puissance, dimensions, poids..."
+                    placeholder={t("add.specsPlaceholder")}
                     rows={5}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="requirements">Exigences particulières</Label>
+                  <Label htmlFor="requirements">{t("add.requirements")}</Label>
                   <Textarea
                     id="requirements"
                     name="requirements"
-                    placeholder="Conditions spéciales, permis requis..."
+                    placeholder={t("add.requirementsPlaceholder")}
                     rows={3}
                   />
                 </div>
@@ -346,7 +348,7 @@ const AddEquipment = () => {
                 </Button>
                 <Button type="submit" disabled={loading}>
                   {loading ? (
-                    <>Création en cours...</>
+                    <>{t("add.creating")}</>
                   ) : (
                     <>
                       <Check className="mr-2 h-4 w-4" />

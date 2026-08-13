@@ -1,6 +1,6 @@
-
 import { CheckCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface QuoteConfirmationProps {
   formData: {
@@ -11,6 +11,10 @@ interface QuoteConfirmationProps {
 }
 
 const QuoteConfirmation = ({ formData, onBackToPricing }: QuoteConfirmationProps) => {
+  const { t } = useLanguage();
+
+  const steps = ["quote.next1", "quote.next2", "quote.next3"];
+
   return (
     <div className="text-center bg-white rounded-xl border p-8">
       <div className="mb-6 flex justify-center">
@@ -18,37 +22,31 @@ const QuoteConfirmation = ({ formData, onBackToPricing }: QuoteConfirmationProps
           <CheckCircle className="h-8 w-8 text-green-600" />
         </div>
       </div>
-      
-      <h2 className="text-2xl font-bold mb-4">Demande envoyée avec succès !</h2>
-      
-      <p className="text-lg mb-2">
-        Merci {formData.fullName} pour votre demande de devis personnalisé.
-      </p>
-      
+
+      <h2 className="text-2xl font-bold mb-4">{t("quote.doneTitle")}</h2>
+
+      <p className="text-lg mb-2">{t("quote.doneThanks", { name: formData.fullName })}</p>
+
       <p className="text-muted-foreground mb-6">
-        Nous avons bien reçu votre demande et un de nos experts vous contactera à l'adresse {formData.email} sous 24 à 48 heures ouvrées pour discuter de vos besoins spécifiques et vous proposer une solution adaptée.
+        {t("quote.doneDesc", { email: formData.email })}
       </p>
-      
+
       <div className="bg-primary/5 p-6 rounded-lg mb-8 max-w-md mx-auto">
-        <h3 className="font-semibold mb-2">Que va-t-il se passer maintenant ?</h3>
+        <h3 className="font-semibold mb-2">{t("quote.whatNext")}</h3>
         <ol className="text-left space-y-2">
-          <li className="flex items-start">
-            <span className="bg-primary/20 text-primary rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">1</span>
-            <span>Notre équipe analysera vos besoins en détail</span>
-          </li>
-          <li className="flex items-start">
-            <span className="bg-primary/20 text-primary rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">2</span>
-            <span>Un expert vous contactera pour discuter des détails</span>
-          </li>
-          <li className="flex items-start">
-            <span className="bg-primary/20 text-primary rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">3</span>
-            <span>Vous recevrez un devis personnalisé par email</span>
-          </li>
+          {steps.map((step, index) => (
+            <li key={step} className="flex items-start">
+              <span className="bg-primary/20 text-primary rounded-full w-6 h-6 flex items-center justify-center mr-2 flex-shrink-0">
+                {index + 1}
+              </span>
+              <span>{t(step)}</span>
+            </li>
+          ))}
         </ol>
       </div>
-      
+
       <Button onClick={onBackToPricing} className="button-premium">
-        Retour à la page des tarifs
+        {t("quote.backToPricing")}
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </div>

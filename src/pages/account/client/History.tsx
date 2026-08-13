@@ -35,7 +35,7 @@ const mockRentalHistory = [
 
 
 const History = () => {
-  const { formatPrice } = useLanguage();
+  const { t, formatPrice } = useLanguage();
 
   // Les achats affichés sont les commandes réelles, les locations restent fictives
   // tant que la réservation d'équipement n'est pas persistée.
@@ -51,7 +51,7 @@ const History = () => {
     purchaseHistory.reduce((sum, purchase) => sum + purchase.total, 0);
 
   return (
-    <AccountLayout title="Historique">
+    <AccountLayout title={t("account.history")}>
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -60,7 +60,7 @@ const History = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold">{mockRentalHistory.length}</p>
-                  <p className="text-sm text-muted-foreground">Locations passées</p>
+                  <p className="text-sm text-muted-foreground">{t("hist.pastRentals")}</p>
                 </div>
                 <Package className="h-8 w-8 text-primary opacity-80" />
               </div>
@@ -71,7 +71,7 @@ const History = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold">{purchaseHistory.length}</p>
-                  <p className="text-sm text-muted-foreground">Achats effectués</p>
+                  <p className="text-sm text-muted-foreground">{t("hist.purchases")}</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-primary opacity-80" />
               </div>
@@ -82,7 +82,7 @@ const History = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold">{formatPrice(totalSpent)}</p>
-                  <p className="text-sm text-muted-foreground">Total dépensé</p>
+                  <p className="text-sm text-muted-foreground">{t("ord.totalSpent")}</p>
                 </div>
                 <HistoryIcon className="h-8 w-8 text-primary opacity-80" />
               </div>
@@ -105,7 +105,7 @@ const History = () => {
 
           <TabsContent value="rentals" className="mt-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Historique des locations</h3>
+              <h3 className="text-lg font-medium">{t("hist.rentalHistory")}</h3>
               <Button variant="outline" size="sm" className="flex items-center gap-2">
                 <ArrowUpDown className="h-4 w-4" />
                 Trier
@@ -144,7 +144,7 @@ const History = () => {
 
           <TabsContent value="purchases" className="mt-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Historique des achats</h3>
+              <h3 className="text-lg font-medium">{t("hist.purchaseHistory")}</h3>
               <Button variant="outline" size="sm" className="flex items-center gap-2">
                 <ArrowUpDown className="h-4 w-4" />
                 Trier

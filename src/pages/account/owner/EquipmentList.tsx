@@ -1,9 +1,9 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Plus, Edit, Trash2, EyeIcon, 
-  ArrowUpDown, ChevronDown, MoreHorizontal, 
+import {
+  Plus, Edit, Trash2, EyeIcon,
+  ArrowUpDown, ChevronDown, MoreHorizontal,
   Filter, Download
 } from "lucide-react";
 import AccountLayout from "@/components/account/AccountLayout";
@@ -34,50 +34,54 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { listings } from "@/data/listings";
+import { useListings, removeListing } from "@/data/listings";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 const EquipmentList = () => {
+  const { t, formatPrice } = useLanguage();
+  const listings = useListings();
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   const filteredEquipment = listings.filter(
     (item) => item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
+
   const handleDelete = (id: string) => {
+    removeListing(id);
     toast({
-      title: "Équipement supprimé",
-      description: "L'équipement a été supprimé avec succès."
+      title: t("bo.equipmentDeleted"),
+      description: t("bo.equipmentDeletedDesc")
     });
   };
-  
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "available":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Disponible</Badge>;
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">{t("bo.available")}</Badge>;
       case "rented":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Loué</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">{t("bo.rented")}</Badge>;
       case "maintenance":
-        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">Maintenance</Badge>;
+        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">{t("bo.maintenance")}</Badge>;
       default:
-        return <Badge variant="outline">Non disponible</Badge>;
+        return <Badge variant="outline">{t("bo.unavailable")}</Badge>;
     }
   };
 
   return (
-    <AccountLayout title="Mes équipements">
+    <AccountLayout title={t("account.myEquipment")}>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <CardTitle>Équipements</CardTitle>
+            <CardTitle>{t("bo.equipment")}</CardTitle>
             <CardDescription>
-              Gérez tous vos équipements disponibles à la location
+              {t("bo.myEquipmentDesc")}
             </CardDescription>
           </div>
           <Link to="/account/equipment/add">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter un équipement
+              {t("bo.addEquipment")}
             </Button>
           </Link>
         </CardHeader>
@@ -85,7 +89,7 @@ const EquipmentList = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex gap-2 w-full max-w-sm">
               <Input
-                placeholder="Rechercher un équipement..."
+                placeholder={t("bo.searchEquipmentSimple")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-xs"
@@ -96,49 +100,49 @@ const EquipmentList = () => {
             </div>
             <Button variant="outline" size="sm">
               <Download className="mr-2 h-4 w-4" />
-              Exporter
+              {t("bo.export")}
             </Button>
           </div>
-          
+
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[80px]">Image</TableHead>
+                  <TableHead className="w-[80px]">{t("bo.image")}</TableHead>
                   <TableHead>
                     <div className="flex items-center">
-                      Nom
+                      {t("bo.name")}
                       <ArrowUpDown className="ml-2 h-3 w-3" />
                     </div>
                   </TableHead>
-                  <TableHead>Catégorie</TableHead>
+                  <TableHead>{t("bo.category")}</TableHead>
                   <TableHead>
                     <div className="flex items-center">
-                      Prix/jour
+                      {t("bo.pricePerDay")}
                       <ArrowUpDown className="ml-2 h-3 w-3" />
                     </div>
                   </TableHead>
-                  <TableHead>Statut</TableHead>
+                  <TableHead>{t("bo.status")}</TableHead>
                   <TableHead>
                     <div className="flex items-center">
-                      Locations
+                      {t("bo.rentals")}
                       <ArrowUpDown className="ml-2 h-3 w-3" />
                     </div>
                   </TableHead>
                   <TableHead>
                     <div className="flex items-center">
-                      Revenus
+                      {t("bo.revenue")}
                       <ArrowUpDown className="ml-2 h-3 w-3" />
                     </div>
                   </TableHead>
-                  <TableHead className="text-right w-[100px]">Actions</TableHead>
+                  <TableHead className="text-right w-[100px]">{t("bo.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEquipment.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      Aucun équipement trouvé
+                      {t("bo.noEquipment")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -146,9 +150,9 @@ const EquipmentList = () => {
                     <TableRow key={equipment.id}>
                       <TableCell>
                         <div className="h-12 w-12 rounded-md bg-secondary/20">
-                          <img 
-                            src={equipment.image} 
-                            alt={equipment.name} 
+                          <img
+                            src={equipment.image}
+                            alt={equipment.name}
                             className="h-full w-full object-cover rounded-md"
                           />
                         </div>
@@ -157,10 +161,10 @@ const EquipmentList = () => {
                         {equipment.name}
                       </TableCell>
                       <TableCell>{equipment.category}</TableCell>
-                      <TableCell>{equipment.price} €</TableCell>
+                      <TableCell>{formatPrice(equipment.price)}</TableCell>
                       <TableCell>{getStatusBadge(equipment.availability)}</TableCell>
                       <TableCell>{equipment.rentals}</TableCell>
-                      <TableCell>{equipment.income} €</TableCell>
+                      <TableCell>{formatPrice(equipment.income)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -170,26 +174,26 @@ const EquipmentList = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t("bo.actions")}</DropdownMenuLabel>
                             <DropdownMenuItem>
                               <Link to={`/equipment/${equipment.id}`} className="flex items-center w-full">
                                 <EyeIcon className="mr-2 h-4 w-4" />
-                                <span>Voir</span>
+                                <span>{t("bo.view")}</span>
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Link to={`/account/equipment/edit/${equipment.id}`} className="flex items-center w-full">
                                 <Edit className="mr-2 h-4 w-4" />
-                                <span>Modifier</span>
+                                <span>{t("bo.edit")}</span>
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
                               onClick={() => handleDelete(equipment.id)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Supprimer</span>
+                              <span>{t("bo.delete")}</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

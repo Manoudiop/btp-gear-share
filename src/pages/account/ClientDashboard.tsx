@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 import AccountLayout from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const ClientDashboard = () => {
+  const { t, formatPrice } = useLanguage();
   return (
-    <AccountLayout title="Tableau de bord">
+    <AccountLayout title={t("account.dashboard")}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-2">
@@ -18,7 +20,7 @@ const ClientDashboard = () => {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">3</p>
-            <p className="text-sm text-muted-foreground">Commandes en cours</p>
+            <p className="text-sm text-muted-foreground">{t("dash.openOrders")}</p>
           </CardContent>
         </Card>
         
@@ -31,7 +33,7 @@ const ClientDashboard = () => {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">2</p>
-            <p className="text-sm text-muted-foreground">Équipements loués</p>
+            <p className="text-sm text-muted-foreground">{t("dash.rentedEquipment")}</p>
           </CardContent>
         </Card>
         
@@ -44,7 +46,7 @@ const ClientDashboard = () => {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">10/07</p>
-            <p className="text-sm text-muted-foreground">Pour la bétonnière</p>
+            <p className="text-sm text-muted-foreground">{t("dash.forTheMixer")}</p>
           </CardContent>
         </Card>
       </div>
@@ -53,10 +55,10 @@ const ClientDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span className="text-lg font-medium">Locations actives</span>
+              <span className="text-lg font-medium">{t("dash.activeRentals")}</span>
               <Link to="/account/rentals">
                 <Button variant="link" size="sm" className="p-0 h-auto">
-                  Voir tout
+                  {t("common.viewAll")}
                 </Button>
               </Link>
             </CardTitle>
@@ -77,7 +79,7 @@ const ClientDashboard = () => {
                   </div>
                 </div>
                 <Link to="/account/rentals/1">
-                  <Button variant="outline" size="sm">Détails</Button>
+                  <Button variant="outline" size="sm">{t("dash.details")}</Button>
                 </Link>
               </div>
               
@@ -95,7 +97,7 @@ const ClientDashboard = () => {
                   </div>
                 </div>
                 <Link to="/account/rentals/2">
-                  <Button variant="outline" size="sm">Détails</Button>
+                  <Button variant="outline" size="sm">{t("dash.details")}</Button>
                 </Link>
               </div>
             </div>
@@ -105,10 +107,10 @@ const ClientDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span className="text-lg font-medium">Commandes récentes</span>
+              <span className="text-lg font-medium">{t("dash.recentOrders")}</span>
               <Link to="/account/orders">
                 <Button variant="link" size="sm" className="p-0 h-auto">
-                  Voir tout
+                  {t("common.viewAll")}
                 </Button>
               </Link>
             </CardTitle>
@@ -121,9 +123,9 @@ const ClientDashboard = () => {
                     <ShoppingCart className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">Commande #1234</p>
+                    <p className="font-medium">{t("dash.order")} #1234</p>
                     <p className="text-sm text-muted-foreground">
-                      3 articles • 249,99€
+                      {t("dash.items", { count: 3 })} • {formatPrice(249.99)}
                     </p>
                   </div>
                 </div>
@@ -138,9 +140,9 @@ const ClientDashboard = () => {
                     <ShoppingCart className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">Commande #1201</p>
+                    <p className="font-medium">{t("dash.order")} #1201</p>
                     <p className="text-sm text-muted-foreground">
-                      5 articles • 532,50€
+                      {t("dash.items", { count: 5 })} • {formatPrice(532.5)}
                     </p>
                   </div>
                 </div>

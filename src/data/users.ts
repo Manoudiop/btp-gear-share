@@ -1,3 +1,5 @@
+import { createStore, useStore } from "./store";
+
 export type UserRole = "admin" | "client" | "owner";
 export type UserStatus = "active" | "inactive" | "suspended";
 
@@ -15,7 +17,7 @@ export interface PlatformUser {
 }
 
 /** Annuaire des utilisateurs, affiché dans l'administration. */
-export const users: PlatformUser[] = [
+const seedUsers: PlatformUser[] = [
   {
     id: "1",
     name: "Jean Dupont",
@@ -85,6 +87,19 @@ export const users: PlatformUser[] = [
     equipments: 3,
   },
 ];
+
+const usersStore = createStore("btp-users", seedUsers);
+
+/** Utilisateurs courants, avec re-rendu à chaque modification. */
+export const useUsers = (): PlatformUser[] => useStore(usersStore);
+
+export const setUserStatus = (id: string, status: UserStatus) =>
+  usersStore.set((items) =>
+    items.map((item) => (item.id === id ? { ...item, status } : item)),
+  );
+
+export const removeUser = (id: string) =>
+  usersStore.set((items) => items.filter((item) => item.id !== id));
 
 export interface DemoAccount {
   email: string;

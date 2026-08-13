@@ -86,6 +86,7 @@ Tant qu'il n'y a pas d'API, `src/data/` tient lieu de base de données :
 | `listings.ts` | Parc vu du back-office (modération admin, disponibilité loueur) |
 | `users.ts` | Annuaire des utilisateurs et comptes de démonstration |
 | `orders.ts` | Commandes de démonstration + commandes passées, persistées en `localStorage` |
+| `store.ts` | Petit magasin d'état partagé et persistant, qui alimente le back-office |
 | `types.ts` | Types partagés |
 
 Le jour où un backend arrive, ce sont les fonctions d'accès de ces fichiers
@@ -104,14 +105,17 @@ Les montants sont stockés **en euros** dans les données et convertis à l'affi
 Langue et devise sont mémorisées dans `localStorage`, la langue initiale étant
 déduite du navigateur.
 
-Les textes légaux (`/privacy`, `/terms`, `/cookies`) et les tableaux du back-office
-restent en français.
+L'ensemble du site est traduit : pages publiques, tunnel de commande, assistant
+de devis, pages légales et espaces compte. Seules les **données** restent telles
+quelles — noms d'équipements, de matériaux et de fournisseurs — comme le ferait
+un vrai catalogue.
 
 ### Persistance navigateur
 
 | Clé `localStorage` | Contenu |
 | --- | --- |
 | `authUser` | Session (validée à la lecture) |
+| `btp-listings`, `btp-users` | Modifications faites depuis le back-office |
 | `btp-cart` | Panier |
 | `btp-orders` | Commandes passées depuis le tunnel |
 | `btp-language`, `btp-currency` | Préférences d'affichage |
@@ -122,6 +126,4 @@ restent en français.
   commande sont simulés dans le navigateur. Rien n'est réellement protégé ni transmis.
 - Le paiement du tunnel de commande ne demande aucune coordonnée bancaire et
   n'effectue aucune transaction.
-- Les actions du back-office (approuver, supprimer, mettre en avant) affichent une
-  confirmation mais ne modifient pas les données.
 - La vue carte du catalogue d'équipements n'est pas implémentée.

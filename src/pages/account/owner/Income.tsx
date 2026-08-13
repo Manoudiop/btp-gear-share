@@ -124,7 +124,7 @@ const topEquipmentData = [
 ];
 
 const Income = () => {
-  const { t } = useLanguage();
+  const { t, formatPrice, currencySymbol } = useLanguage();
   const [period, setPeriod] = useState("year");
   
   // Calculs des statistiques
@@ -147,9 +147,9 @@ const Income = () => {
       case "payé":
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Payé</Badge>;
       case "en_attente":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">En attente</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">{t("inc.pending")}</Badge>;
       case "traité":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Traité</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">{t("inc.processed")}</Badge>;
       default:
         return <Badge variant="outline">{statut}</Badge>;
     }
@@ -159,24 +159,24 @@ const Income = () => {
     <>
       <Seo title={t("account.income")} />
 
-      <AccountLayout title="Mes revenus">
+      <AccountLayout title={t("account.income")}>
         <div className="space-y-6">
           {/* Sélection de période */}
           <div className="flex justify-between items-center">
             <Select value={period} onValueChange={setPeriod}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Période" />
+                <SelectValue placeholder={t("inc.period")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="month">Ce mois</SelectItem>
-                <SelectItem value="quarter">Ce trimestre</SelectItem>
-                <SelectItem value="year">Cette année</SelectItem>
-                <SelectItem value="all">Tout</SelectItem>
+                <SelectItem value="month">{t("inc.thisMonth")}</SelectItem>
+                <SelectItem value="quarter">{t("inc.thisQuarter")}</SelectItem>
+                <SelectItem value="year">{t("inc.thisYear")}</SelectItem>
+                <SelectItem value="all">{t("inc.allTime")}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline">
               <Download className="h-4 w-4 mr-2" />
-              Exporter
+              {t("bo.export")}
             </Button>
           </div>
 
@@ -184,11 +184,11 @@ const Income = () => {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Solde disponible</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("inc.available")}</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{availableBalance.toLocaleString()} €</div>
+                <div className="text-2xl font-bold">{formatPrice(availableBalance)}</div>
                 <div className="flex items-center pt-1 text-xs text-green-600">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   +12% ce mois
@@ -198,39 +198,39 @@ const Income = () => {
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Revenus totaux</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("inc.total")}</CardTitle>
                 <ArrowUpRight className="h-4 w-4 text-green-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalRevenue.toLocaleString()} €</div>
+                <div className="text-2xl font-bold">{formatPrice(totalRevenue)}</div>
                 <p className="text-xs text-muted-foreground">
-                  Sur la période sélectionnée
+                  {t("inc.totalDesc")}
                 </p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">En attente</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("inc.pending")}</CardTitle>
                 <Clock className="h-4 w-4 text-yellow-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{pendingRevenue.toLocaleString()} €</div>
+                <div className="text-2xl font-bold">{formatPrice(pendingRevenue)}</div>
                 <p className="text-xs text-muted-foreground">
-                  Paiements en cours
+                  {t("inc.pendingDesc")}
                 </p>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Retiré</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("inc.withdrawn")}</CardTitle>
                 <ArrowDownRight className="h-4 w-4 text-blue-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalWithdrawn.toLocaleString()} €</div>
+                <div className="text-2xl font-bold">{formatPrice(totalWithdrawn)}</div>
                 <p className="text-xs text-muted-foreground">
-                  Vers votre compte bancaire
+                  {t("inc.withdrawnDesc")}
                 </p>
               </CardContent>
             </Card>
@@ -241,14 +241,14 @@ const Income = () => {
             <CardContent className="pt-6">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
-                  <h3 className="font-semibold">Retirer vos fonds</h3>
+                  <h3 className="font-semibold">{t("inc.withdrawTitle")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Transférez votre solde vers votre compte bancaire
+                    {t("inc.withdrawDesc")}
                   </p>
                 </div>
                 <Button className="button-premium">
                   <CreditCard className="h-4 w-4 mr-2" />
-                  Retirer {availableBalance.toLocaleString()} €
+                  {t("inc.withdraw")} {formatPrice(availableBalance)}
                 </Button>
               </div>
             </CardContent>
@@ -257,9 +257,9 @@ const Income = () => {
           {/* Graphique des revenus */}
           <Card>
             <CardHeader>
-              <CardTitle>Évolution des revenus</CardTitle>
+              <CardTitle>{t("inc.trend")}</CardTitle>
               <CardDescription>
-                Revenus mensuels et nombre de locations
+                {t("inc.trendDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -277,7 +277,7 @@ const Income = () => {
                       }}
                     />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="revenus" name="Revenus (€)" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <Bar yAxisId="left" dataKey="revenus" name={`Revenus (${currencySymbol})`} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     <Line yAxisId="right" type="monotone" dataKey="locations" name="Locations" stroke="hsl(var(--secondary))" strokeWidth={2} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -288,9 +288,9 @@ const Income = () => {
           {/* Équipements les plus rentables */}
           <Card>
             <CardHeader>
-              <CardTitle>Équipements les plus rentables</CardTitle>
+              <CardTitle>{t("inc.topEquipment")}</CardTitle>
               <CardDescription>
-                Top 5 de vos équipements par revenus générés
+                {t("inc.topEquipmentDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -303,11 +303,11 @@ const Income = () => {
                       </div>
                       <div>
                         <p className="font-medium">{equipment.name}</p>
-                        <p className="text-sm text-muted-foreground">{equipment.locations} locations</p>
+                        <p className="text-sm text-muted-foreground">{t("inc.rentalsCount", { count: equipment.locations })}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{equipment.revenus.toLocaleString()} €</p>
+                      <p className="font-semibold">{formatPrice(equipment.revenus)}</p>
                     </div>
                   </div>
                 ))}
@@ -318,20 +318,20 @@ const Income = () => {
           {/* Historique des transactions */}
           <Card>
             <CardHeader>
-              <CardTitle>Historique des transactions</CardTitle>
+              <CardTitle>{t("inc.history")}</CardTitle>
               <CardDescription>
-                Toutes vos entrées et sorties de fonds
+                {t("inc.historyDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Montant</TableHead>
+                    <TableHead>{t("inc.date")}</TableHead>
+                    <TableHead>{t("inc.description")}</TableHead>
+                    <TableHead>{t("inc.client")}</TableHead>
+                    <TableHead>{t("bo.status")}</TableHead>
+                    <TableHead className="text-right">{t("inc.amount")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -342,7 +342,8 @@ const Income = () => {
                       <TableCell>{transaction.client}</TableCell>
                       <TableCell>{getStatusBadge(transaction.statut)}</TableCell>
                       <TableCell className={`text-right font-semibold ${transaction.type === 'crédit' ? 'text-green-600' : 'text-blue-600'}`}>
-                        {transaction.type === 'crédit' ? '+' : '-'}{transaction.montant.toLocaleString()} €
+                        {transaction.type === 'crédit' ? '+' : '-'}
+                        {formatPrice(transaction.montant)}
                       </TableCell>
                     </TableRow>
                   ))}
