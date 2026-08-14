@@ -1129,6 +1129,14 @@ export const translations: Record<string, Record<Language, string>> = {
   },
   "equipment.similar": { fr: "Équipements similaires", en: "Similar equipment" },
   "equipment.bookingSent": { fr: "Réservation en cours", en: "Booking in progress" },
+  "contact.failed": {
+    fr: "Le message n'a pas pu être envoyé. Réessayez.",
+    en: "The message could not be sent. Please try again.",
+  },
+  "quote.failed": {
+    fr: "La demande n'a pas pu être envoyée. Réessayez.",
+    en: "The request could not be sent. Please try again.",
+  },
   "ord.step.confirmed": { fr: "Commande confirmée", en: "Order confirmed" },
   "ord.step.preparing": { fr: "En préparation", en: "Being prepared" },
   "ord.step.shipped": { fr: "Expédiée", en: "Shipped" },

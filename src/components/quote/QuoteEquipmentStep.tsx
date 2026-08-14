@@ -59,7 +59,7 @@ interface QuoteEquipmentStepProps {
     additionalRequirements: string;
   };
   updateFormData: (data: Partial<EquipmentFormValues>) => void;
-  onSubmit: () => void;
+  onSubmit: (values: EquipmentFormValues) => void;
   onPrevious: () => void;
   isSubmitting: boolean;
 }
@@ -86,7 +86,9 @@ const QuoteEquipmentStep = ({
 
   const handleSubmit = (values: EquipmentFormValues) => {
     updateFormData(values);
-    onSubmit();
+    // Les valeurs sont passées à l'appelant : l'état parent qu'il lirait n'est
+    // pas encore à jour dans ce même rendu, et l'étape serait envoyée vide.
+    onSubmit(values);
   };
 
   return (

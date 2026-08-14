@@ -22,6 +22,8 @@ import QuoteEquipmentStep from "@/components/quote/QuoteEquipmentStep";
 import QuoteConfirmation from "@/components/quote/QuoteConfirmation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Seo from "@/components/Seo";
+import { useSendQuote } from "@/data/requests";
+import { toast } from "@/hooks/use-toast";
 
 type QuoteFormData = {
   // Personal information
@@ -62,6 +64,7 @@ const CustomQuote = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const sendQuote = useSendQuote();
   
   const totalSteps = 3;
   const progress = (currentStep / totalSteps) * 100;
@@ -80,14 +83,19 @@ const CustomQuote = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (equipment: Partial<QuoteFormData>) => {
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log("Form submitted:", formData);
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    setCurrentStep(totalSteps + 1);
+
+    try {
+      await sendQuote.mutateAsync({ ...formData, ...equipment });
+      setIsSubmitted(true);
+      setCurrentStep(totalSteps + 1);
+    } catch {
+      // La demande reste à l'écran : trois étapes de saisie ne se refont pas.
+      toast({ title: t("quote.failed"), variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

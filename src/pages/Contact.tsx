@@ -4,6 +4,8 @@ import { Phone, Mail, MapPin, Send, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Seo from "@/components/Seo";
+import { useSendContactMessage } from "@/data/requests";
+import { toast } from "@/hooks/use-toast";
 
 const emptyForm = { name: "", email: "", phone: "", subject: "", message: "" };
 
@@ -21,6 +23,7 @@ const Contact = () => {
   const { t } = useLanguage();
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
+  const sendMessage = useSendContactMessage();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -29,13 +32,18 @@ const Contact = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Pas encore de backend : le formulaire se contente de confirmer l'envoi.
-    setFormSubmitted(true);
-    setFormData(emptyForm);
 
-    window.setTimeout(() => setFormSubmitted(false), 5000);
+    try {
+      await sendMessage.mutateAsync(formData);
+      setFormSubmitted(true);
+      setFormData(emptyForm);
+      window.setTimeout(() => setFormSubmitted(false), 5000);
+    } catch {
+      // La saisie est conservée : l'envoi peut être retenté sans tout retaper.
+      toast({ title: t("contact.failed"), variant: "destructive" });
+    }
   };
 
   const inputClass =
