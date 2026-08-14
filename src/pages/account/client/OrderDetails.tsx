@@ -8,14 +8,15 @@ import {
   MapPin,
   Phone,
   Calendar,
-  CreditCard
+  CreditCard,
+  Loader2,
 } from "lucide-react";
 import AccountLayout from "@/components/account/AccountLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { getOrderById } from "@/data/orders";
+import { useOrder } from "@/data/orders";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
@@ -57,7 +58,17 @@ const getStatusBadge = (status: string, t: (key: string) => string) => {
 const OrderDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { t, formatPrice } = useLanguage();
-  const order = getOrderById(id);
+  const { data: order, isLoading } = useOrder(id);
+
+  if (isLoading) {
+    return (
+      <AccountLayout title={t("account.orders")}>
+        <div className="py-12 text-center">
+          <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </AccountLayout>
+    );
+  }
 
   if (!order) {
     return (
@@ -139,12 +150,10 @@ const OrderDetails = () => {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <p className={`font-medium ${step.current ? "text-primary" : step.completed ? "" : "text-muted-foreground"}`}>
-                      {step.status}
+                      {t(step.status)}
                     </p>
-                    {(step.date || step.time) && (
-                      <p className="text-sm text-muted-foreground">
-                        {step.date} {step.time && `à ${step.time}`}
-                      </p>
+                    {step.date && (
+                      <p className="text-sm text-muted-foreground">{step.date}</p>
                     )}
                   </div>
                 </div>

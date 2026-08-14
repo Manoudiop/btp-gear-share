@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getOrders } from "@/data/orders";
+import { useOrders } from "@/data/orders";
 
 const mockRentalHistory = [
   {
@@ -39,7 +39,8 @@ const History = () => {
 
   // Les achats affichés sont les commandes réelles, les locations restent fictives
   // tant que la réservation d'équipement n'est pas persistée.
-  const purchaseHistory = getOrders().map((order) => ({
+  const { data: orders = [] } = useOrders();
+  const purchaseHistory = orders.map((order) => ({
     id: order.id,
     date: order.date,
     items: order.items.length,

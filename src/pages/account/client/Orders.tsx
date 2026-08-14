@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { ShoppingCart, Package, Truck, CheckCircle, Clock, Search, Filter, CalendarIcon, X } from "lucide-react";
+import { ShoppingCart, Package, Truck, CheckCircle, Clock, Search, Filter, CalendarIcon, X, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
@@ -30,7 +30,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { getOrders } from "@/data/orders";
+import { useOrders } from "@/data/orders";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
@@ -83,7 +83,7 @@ const Orders = () => {
   // Les commandes passées depuis le tunnel s'ajoutent aux commandes de démonstration.
   const { t, formatPrice, language } = useLanguage();
   const dateLocale = language === "fr" ? fr : enUS;
-  const [orders] = useState(getOrders);
+  const { data: orders = [], isLoading } = useOrders();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
@@ -290,7 +290,13 @@ const Orders = () => {
 
         {/* Orders List */}
         <div className="space-y-4">
-          {filteredOrders.length === 0 ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+              </CardContent>
+            </Card>
+          ) : filteredOrders.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <p className="text-muted-foreground">{t("ord.noMatch")}</p>

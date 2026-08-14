@@ -1,10 +1,23 @@
-// Commandes client.
-//
-// Les commandes de démonstration servent de base ; celles passées depuis le
-// tunnel de commande sont ajoutées dans localStorage, faute de backend. Le jour
-// où l'API existe, seules les quatre fonctions du bas changent.
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isSupabaseConfigured, requireSupabase } from "@/lib/supabase";
 
-export type OrderStatus = "pending" | "processing" | "shipping" | "delivered" | "cancelled";
+/**
+ * Commandes de matériaux.
+ *
+ * Les commandes vivaient dans localStorage : elles disparaissaient au premier
+ * nettoyage du navigateur et n'existaient que sur la machine qui les avait
+ * passées. Elles sont désormais écrites dans `orders` et `order_items`.
+ *
+ * Le suivi n'est pas stocké : c'est une lecture du statut, reconstruite à
+ * l'affichage. Une étape en base pourrait contredire le statut ; dérivée, non.
+ */
+
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipping"
+  | "delivered"
+  | "cancelled";
 
 export interface OrderItem {
   name: string;
@@ -22,14 +35,15 @@ export interface ShippingAddress {
 }
 
 export interface TimelineStep {
+  /** Clé de traduction : l'étape est rendue dans la langue de l'utilisateur. */
   status: string;
   date: string;
-  time: string;
   completed: boolean;
   current?: boolean;
 }
 
 export interface Order {
+  /** Référence lisible, celle qui apparaît dans les adresses. */
   id: string;
   /** Date d'affichage au format jj/mm/aaaa. */
   date: string;
@@ -48,166 +62,110 @@ export interface Order {
   timeline: TimelineStep[];
 }
 
-const STORAGE_KEY = "btp-orders";
+const formatDate = (value: string | Date) =>
+  new Date(value).toLocaleDateString("fr-FR");
 
-const formatDate = (date: Date) => date.toLocaleDateString("fr-FR");
-const formatTime = (date: Date) =>
-  date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-
-const seedOrders: Order[] = [
-  {
-    id: "1234",
-    date: "05/01/2026",
-    createdAt: new Date(2026, 0, 5, 10, 30).toISOString(),
-    items: [
-      { name: "Sac de ciment 35kg", quantity: 10, price: 8.99 },
-      { name: "Sable 25kg", quantity: 5, price: 4.5 },
-    ],
-    subtotal: 112.4,
-    deliveryFee: 0,
-    total: 112.4,
-    status: "shipping",
-    shippingAddress: {
-      name: "Jean Dupont",
-      street: "123 Rue de la Construction",
-      city: "Paris",
-      postalCode: "75001",
-      phone: "06 12 34 56 78",
-    },
-    paymentMethod: "Carte bancaire ****4242",
-    deliveryOption: "Standard",
-    trackingNumber: "FR123456789",
-    estimatedDelivery: "07/01/2026",
-    timeline: [
-      { status: "Commande confirmée", date: "05/01/2026", time: "10:30", completed: true },
-      { status: "En préparation", date: "05/01/2026", time: "14:15", completed: true },
-      { status: "Expédiée", date: "06/01/2026", time: "09:00", completed: true },
-      {
-        status: "En cours de livraison",
-        date: "07/01/2026",
-        time: "08:30",
-        completed: false,
-        current: true,
-      },
-      { status: "Livrée", date: "", time: "", completed: false },
-    ],
-  },
-  {
-    id: "1201",
-    date: "28/12/2025",
-    createdAt: new Date(2025, 11, 28, 11, 0).toISOString(),
-    items: [
-      { name: "Parpaing 20x20x50", quantity: 50, price: 2.1 },
-      { name: "Fer à béton 10mm", quantity: 20, price: 5.5 },
-      { name: "Fil de fer recuit", quantity: 2, price: 8.99 },
-    ],
-    subtotal: 232.98,
-    deliveryFee: 0,
-    total: 232.98,
-    status: "delivered",
-    shippingAddress: {
-      name: "Jean Dupont",
-      street: "123 Rue de la Construction",
-      city: "Paris",
-      postalCode: "75001",
-      phone: "06 12 34 56 78",
-    },
-    paymentMethod: "Carte bancaire ****4242",
-    deliveryOption: "Standard",
-    trackingNumber: "FR987654321",
-    timeline: [
-      { status: "Commande confirmée", date: "28/12/2025", time: "11:00", completed: true },
-      { status: "En préparation", date: "28/12/2025", time: "15:30", completed: true },
-      { status: "Expédiée", date: "29/12/2025", time: "08:45", completed: true },
-      { status: "En cours de livraison", date: "30/12/2025", time: "07:00", completed: true },
-      { status: "Livrée", date: "30/12/2025", time: "14:22", completed: true },
-    ],
-  },
-  {
-    id: "1189",
-    date: "20/12/2025",
-    createdAt: new Date(2025, 11, 20, 9, 15).toISOString(),
-    items: [{ name: "Plaque de plâtre BA13", quantity: 15, price: 12.99 }],
-    subtotal: 194.85,
-    deliveryFee: 0,
-    total: 194.85,
-    status: "delivered",
-    shippingAddress: {
-      name: "Jean Dupont",
-      street: "123 Rue de la Construction",
-      city: "Paris",
-      postalCode: "75001",
-      phone: "06 12 34 56 78",
-    },
-    paymentMethod: "Carte bancaire ****4242",
-    deliveryOption: "Standard",
-    trackingNumber: "FR456123789",
-    timeline: [
-      { status: "Commande confirmée", date: "20/12/2025", time: "09:15", completed: true },
-      { status: "En préparation", date: "20/12/2025", time: "13:40", completed: true },
-      { status: "Expédiée", date: "21/12/2025", time: "08:10", completed: true },
-      { status: "En cours de livraison", date: "22/12/2025", time: "07:30", completed: true },
-      { status: "Livrée", date: "22/12/2025", time: "11:05", completed: true },
-    ],
-  },
-  {
-    id: "1156",
-    date: "10/12/2025",
-    createdAt: new Date(2025, 11, 10, 16, 45).toISOString(),
-    items: [
-      { name: "Carrelage sol 60x60", quantity: 8, price: 35.0 },
-      { name: "Colle carrelage 25kg", quantity: 3, price: 18.5 },
-    ],
-    subtotal: 335.5,
-    deliveryFee: 0,
-    total: 335.5,
-    status: "delivered",
-    shippingAddress: {
-      name: "Jean Dupont",
-      street: "123 Rue de la Construction",
-      city: "Paris",
-      postalCode: "75001",
-      phone: "06 12 34 56 78",
-    },
-    paymentMethod: "Carte bancaire ****4242",
-    deliveryOption: "Standard",
-    trackingNumber: "FR321654987",
-    timeline: [
-      { status: "Commande confirmée", date: "10/12/2025", time: "16:45", completed: true },
-      { status: "En préparation", date: "11/12/2025", time: "09:20", completed: true },
-      { status: "Expédiée", date: "11/12/2025", time: "17:00", completed: true },
-      { status: "En cours de livraison", date: "12/12/2025", time: "08:00", completed: true },
-      { status: "Livrée", date: "12/12/2025", time: "15:30", completed: true },
-    ],
-  },
+/**
+ * Étapes du suivi, dans l'ordre. Chaque statut de la base marque une étape
+ * atteinte ; les suivantes restent à venir, sans date inventée.
+ */
+const TIMELINE: { key: string; status: OrderStatus }[] = [
+  { key: "ord.step.confirmed", status: "pending" },
+  { key: "ord.step.preparing", status: "processing" },
+  { key: "ord.step.shipped", status: "shipping" },
+  { key: "ord.step.delivered", status: "delivered" },
 ];
 
-const readPlacedOrders = (): Order[] => {
-  if (typeof window === "undefined") return [];
-
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (!stored) return [];
-
-  try {
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) ? (parsed as Order[]) : [];
-  } catch {
-    window.localStorage.removeItem(STORAGE_KEY);
-    return [];
+const buildTimeline = (status: OrderStatus, createdAt: string): TimelineStep[] => {
+  // Une commande annulée n'a pas de suivi : elle s'arrête à sa confirmation.
+  if (status === "cancelled") {
+    return [
+      { status: "ord.step.confirmed", date: formatDate(createdAt), completed: true },
+      { status: "ord.step.cancelled", date: "", completed: false, current: true },
+    ];
   }
+
+  const reached = TIMELINE.findIndex((step) => step.status === status);
+
+  return TIMELINE.map((step, index) => ({
+    status: step.key,
+    // Seule la confirmation a une date sûre ; les autres ne sont pas horodatées.
+    date: index === 0 ? formatDate(createdAt) : "",
+    completed: index < reached,
+    current: index === reached,
+  }));
 };
 
-/** Toutes les commandes, de la plus récente à la plus ancienne. */
-export const getOrders = (): Order[] =>
-  [...readPlacedOrders(), ...seedOrders].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+/* eslint-disable @typescript-eslint/no-explicit-any -- lignes brutes de PostgREST */
+const toOrder = (row: any): Order => ({
+  id: row.reference,
+  date: formatDate(row.created_at),
+  createdAt: row.created_at,
+  items: (row.order_items ?? []).map((item: any) => ({
+    name: item.name,
+    quantity: Number(item.quantity),
+    price: Number(item.unit_price),
+    unit: item.unit ?? undefined,
+  })),
+  subtotal: Number(row.subtotal),
+  deliveryFee: Number(row.delivery_fee),
+  total: Number(row.total),
+  status: row.status,
+  shippingAddress: row.shipping_address,
+  paymentMethod: row.payment_method,
+  deliveryOption: row.delivery_option,
+  trackingNumber: row.tracking_number ?? undefined,
+  estimatedDelivery: row.estimated_delivery
+    ? formatDate(row.estimated_delivery)
+    : undefined,
+  timeline: buildTimeline(row.status, row.created_at),
+});
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
-export const getOrderById = (id?: string): Order | undefined =>
-  getOrders().find((order) => order.id === id);
+const ORDER_COLUMNS = `
+  id, reference, status, subtotal, delivery_fee, total, shipping_address,
+  payment_method, delivery_option, tracking_number, estimated_delivery, created_at,
+  order_items (name, unit, quantity, unit_price)
+`;
+
+/** Commandes de l'utilisateur courant, de la plus récente à la plus ancienne. */
+export const useOrders = () =>
+  useQuery({
+    queryKey: ["orders"],
+    queryFn: async (): Promise<Order[]> => {
+      if (!isSupabaseConfigured) return [];
+
+      const { data, error } = await requireSupabase()
+        .from("orders")
+        .select(ORDER_COLUMNS)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return (data ?? []).map(toOrder);
+    },
+  });
+
+/** Une commande, retrouvée par sa référence — celle qui figure dans l'adresse. */
+export const useOrder = (reference?: string) =>
+  useQuery({
+    queryKey: ["orders", reference],
+    enabled: Boolean(reference),
+    queryFn: async (): Promise<Order | null> => {
+      if (!isSupabaseConfigured) return null;
+
+      const { data, error } = await requireSupabase()
+        .from("orders")
+        .select(ORDER_COLUMNS)
+        .eq("reference", reference as string)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data ? toOrder(data) : null;
+    },
+  });
 
 export interface PlaceOrderInput {
-  items: OrderItem[];
+  items: (OrderItem & { materialId?: string })[];
   subtotal: number;
   deliveryFee: number;
   shippingAddress: ShippingAddress;
@@ -217,44 +175,74 @@ export interface PlaceOrderInput {
   deliveryDays: number;
 }
 
-/** Enregistre une nouvelle commande et renvoie la commande créée. */
-export const placeOrder = (input: PlaceOrderInput): Order => {
-  const now = new Date();
-  const estimated = new Date(now);
-  estimated.setDate(estimated.getDate() + input.deliveryDays);
+/** Référence lisible, faute de séquence côté serveur. */
+const buildReference = (now: Date) =>
+  `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getTime(),
+  ).slice(-5)}`;
 
-  const order: Order = {
-    // Référence lisible et unique dans le temps, faute de séquence côté serveur.
-    id: `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-      now.getTime(),
-    ).slice(-5)}`,
-    date: formatDate(now),
-    createdAt: now.toISOString(),
-    items: input.items,
-    subtotal: input.subtotal,
-    deliveryFee: input.deliveryFee,
-    total: input.subtotal + input.deliveryFee,
-    status: "processing",
-    shippingAddress: input.shippingAddress,
-    paymentMethod: input.paymentMethod,
-    deliveryOption: input.deliveryOption,
-    estimatedDelivery: formatDate(estimated),
-    timeline: [
-      { status: "Commande confirmée", date: formatDate(now), time: formatTime(now), completed: true },
-      {
-        status: "En préparation",
-        date: formatDate(now),
-        time: formatTime(now),
-        completed: false,
-        current: true,
-      },
-      { status: "Expédiée", date: "", time: "", completed: false },
-      { status: "En cours de livraison", date: "", time: "", completed: false },
-      { status: "Livrée", date: "", time: "", completed: false },
-    ],
-  };
+export const usePlaceOrder = () => {
+  const queryClient = useQueryClient();
 
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify([order, ...readPlacedOrders()]));
+  return useMutation({
+    mutationFn: async (input: PlaceOrderInput): Promise<Order> => {
+      if (!isSupabaseConfigured) {
+        throw new Error("Supabase n'est pas configuré : commande impossible.");
+      }
 
-  return order;
+      const supabase = requireSupabase();
+      const { data: session } = await supabase.auth.getUser();
+      if (!session.user) throw new Error("Session expirée.");
+
+      const now = new Date();
+      const estimated = new Date(now);
+      estimated.setDate(estimated.getDate() + input.deliveryDays);
+
+      const { data: order, error } = await supabase
+        .from("orders")
+        .insert({
+          reference: buildReference(now),
+          user_id: session.user.id,
+          status: "processing",
+          subtotal: input.subtotal,
+          delivery_fee: input.deliveryFee,
+          total: input.subtotal + input.deliveryFee,
+          shipping_address: input.shippingAddress,
+          payment_method: input.paymentMethod,
+          delivery_option: input.deliveryOption,
+          estimated_delivery: estimated.toISOString().slice(0, 10),
+        })
+        .select("id, reference")
+        .single();
+
+      if (error) throw error;
+
+      const { error: itemsError } = await supabase.from("order_items").insert(
+        input.items.map((item) => ({
+          order_id: order.id,
+          material_id: item.materialId ?? null,
+          name: item.name,
+          unit: item.unit ?? null,
+          quantity: item.quantity,
+          unit_price: item.price,
+        })),
+      );
+
+      // La commande est déjà écrite : signaler l'échec des lignes vaut mieux
+      // que laisser croire à une commande complète.
+      if (itemsError) throw itemsError;
+
+      const { data: created, error: readError } = await supabase
+        .from("orders")
+        .select(ORDER_COLUMNS)
+        .eq("id", order.id)
+        .single();
+
+      if (readError) throw readError;
+      return toOrder(created);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
 };

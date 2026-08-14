@@ -1,16 +1,24 @@
 import { Link, useParams } from "react-router-dom";
-import { CheckCircle2, MapPin, Package, Truck } from "lucide-react";
+import { CheckCircle2, Loader2, MapPin, Package, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getOrderById } from "@/data/orders";
+import { useOrder } from "@/data/orders";
 import Seo from "@/components/Seo";
 
 const OrderConfirmation = () => {
   const { reference } = useParams();
   const { t, formatPrice } = useLanguage();
-  const order = getOrderById(reference);
+  const { data: order, isLoading } = useOrder(reference);
+
+  if (isLoading) {
+    return (
+      <div className="container py-16 text-center">
+        <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!order) {
     return (

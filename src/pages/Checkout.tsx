@@ -23,7 +23,7 @@ import { toast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { placeOrder } from "@/data/orders";
+import { usePlaceOrder } from "@/data/orders";
 import Seo from "@/components/Seo";
 
 const deliveryOptions = [
@@ -62,6 +62,7 @@ const Checkout = () => {
   const [deliveryOption, setDeliveryOption] = useState(deliveryOptions[0].id);
   const [paymentMethod, setPaymentMethod] = useState(paymentMethods[0].id);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const placeOrder = usePlaceOrder();
 
   const checkoutSchema = useMemo(() => createCheckoutSchema(t), [t]);
 
@@ -89,13 +90,15 @@ const Checkout = () => {
     paymentMethods.find((method) => method.id === paymentMethod) ?? paymentMethods[0];
   const total = totalPrice + selectedDelivery.price;
 
-  const onSubmit = (data: CheckoutFormData) => {
+  const onSubmit = async (data: CheckoutFormData) => {
     setIsSubmitting(true);
 
-    // Paiement simulé : le délai reproduit l'aller-retour d'un vrai prestataire.
-    window.setTimeout(() => {
-      const order = placeOrder({
+    try {
+      const order = await placeOrder.mutateAsync({
         items: items.map((item) => ({
+          // Rattache la ligne au catalogue, sans dépendre de lui : le nom et le
+          // prix restent figés si le matériau change ou disparaît.
+          materialId: item.id,
           name: item.name,
           quantity: item.quantity,
           price: item.price,
@@ -121,7 +124,11 @@ const Checkout = () => {
         description: t("checkout.confirmedDesc", { reference: order.id }),
       });
       navigate(`/order-confirmation/${order.id}`, { replace: true });
-    }, 900);
+    } catch {
+      // Le panier est laissé intact : la commande peut être retentée telle quelle.
+      setIsSubmitting(false);
+      toast({ title: t("checkout.failed"), variant: "destructive" });
+    }
   };
 
   return (
