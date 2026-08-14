@@ -122,16 +122,27 @@ un vrai catalogue.
 
 ## Backend (en préparation)
 
-Le projet est prêt à être branché sur **Supabase**. Rien n'est encore connecté :
-sans variables d'environnement, l'application tourne sur les données de
-démonstration de `src/data/` et fonctionne telle quelle.
+L'application est branchée sur **Supabase** : catalogue, comptes, réservations,
+commandes, formulaires et back-office lisent et écrivent en base. Sans variables
+d'environnement, le catalogue retombe sur les données de démonstration de
+`src/data/` et le dépôt reste exécutable.
 
 ```
 supabase/
-├── migrations/0001_schema.sql    Tables, index, recherche plein texte
-├── migrations/0002_policies.sql  Sécurité par ligne
-└── seed.sql                      Jeu de données initial (généré)
+├── migrations/0001_schema.sql          Tables, index, recherche plein texte
+├── migrations/0002_policies.sql        Sécurité par ligne
+├── migrations/0003_unicite.sql         Contraintes d'unicité, rejouables
+├── migrations/0004_notes.sql           Notes et nombre d'avis
+├── migrations/0005_nom_loueur.sql      Noms recopiés sur annonces et avis
+├── migrations/0006_nom_locataire.sql   Nom recopié sur la réservation
+├── migrations/0007_candidatures_loueur.sql  Table des candidatures
+├── migrations/0008_annonces_loueur.sql Durée minimale et dépôt des photos
+├── migrations/0009_suppression_compte.sql   Suppression de compte
+└── seed.sql                            Jeu de données initial (généré)
 ```
+
+Les migrations se rejouent sans dommage : elles sont écrites pour être passées
+plusieurs fois.
 
 Le jeu de données initial est produit depuis le catalogue front, pour qu'il n'en
 diverge pas :
@@ -143,7 +154,8 @@ node scripts/generate-seed.mjs
 ### Mise en route
 
 1. Créer un projet sur [supabase.com](https://supabase.com).
-2. Exécuter `0001_schema.sql` puis `0002_policies.sql` dans l'éditeur SQL.
+2. Exécuter les fichiers de `supabase/migrations/` dans l'ordre, dans
+   l'éditeur SQL.
 3. Créer les trois comptes de démonstration dans **Authentication → Users**
    (les emails attendus sont rappelés en tête de `seed.sql`).
 4. Exécuter `seed.sql`.
@@ -157,8 +169,15 @@ même objet — un héritage des données de démonstration. Ils sont fusionnés
 une seule table `equipment`, avec les colonnes de modération à côté de celles
 du catalogue.
 
-La table `bookings` n'avait pas d'équivalent côté front : réserver un
-équipement affichait une confirmation sans rien enregistrer.
+Plusieurs écrans faisaient semblant. Réserver un équipement, passer commande,
+envoyer un message, demander un devis, candidater comme loueur ou déposer une
+annonce affichaient une confirmation sans rien enregistrer. Tout cela écrit
+désormais en base.
+
+Certains noms sont volontairement recopiés — le loueur sur l'annonce, l'auteur
+sur l'avis, le locataire sur la réservation. La table des profils n'est lisible
+que par son titulaire : l'ouvrir pour afficher un nom exposerait aussi les
+emails, téléphones et adresses.
 
 Surtout, l'autorisation change de camp. `PrivateRoute` ne fait que masquer des
 écrans : il suffit d'éditer le `localStorage` pour se déclarer administrateur.
@@ -167,8 +186,12 @@ Les règles de `0002_policies.sql` sont appliquées par la base et ne peuvent pa
 
 ## Limites connues
 
-- **Aucun backend.** Authentification, paiement, envoi de formulaires et suivi de
-  commande sont simulés dans le navigateur. Rien n'est réellement protégé ni transmis.
-- Le paiement du tunnel de commande ne demande aucune coordonnée bancaire et
-  n'effectue aucune transaction.
+- **Aucun paiement.** Le tunnel de commande ne demande aucune coordonnée
+  bancaire et n'effectue aucune transaction : la commande est enregistrée, elle
+  n'est pas encaissée.
+- **Aucun envoi d'email.** Les messages, devis et candidatures sont bien
+  enregistrés, mais personne n'est prévenu : l'administration doit consulter la
+  base.
+- Le suivi de livraison est déduit du statut de la commande : seule sa
+  confirmation est datée, les étapes suivantes n'ont pas d'horodatage.
 - La vue carte du catalogue d'équipements n'est pas implémentée.
