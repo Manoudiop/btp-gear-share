@@ -9,7 +9,8 @@ import {
 } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
-import { findDemoAccount, type UserRole } from "@/data/users";
+import { findDemoAccount } from "@/data/demoAccounts";
+import type { UserRole } from "@/data/users";
 
 export type { UserRole };
 
@@ -164,6 +165,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // navigue vers une page privée pendant que `user` est encore nul, et
       // PrivateRoute le renvoie aussitôt vers /login.
       await loadProfile(data.session);
+
+      // Trace la connexion pour l'annuaire de l'administration. L'échec est
+      // sans conséquence : il ne doit pas empêcher d'entrer.
+      void supabase
+        .from("profiles")
+        .update({ last_login_at: new Date().toISOString() })
+        .eq("id", data.session.user.id);
+
       return {};
     },
     [loadProfile],

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   CheckCircle, AlertTriangle, MoreHorizontal,
@@ -43,10 +43,10 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import {
   useListings,
-  listingCategories,
-  setListingStatus,
-  toggleListingFeatured,
-  removeListing,
+  listingCategoriesOf,
+  useSetListingStatus,
+  useToggleListingFeatured,
+  useRemoveListing,
 } from "@/data/listings";
 import type { ListingStatus } from "@/data/types";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -54,7 +54,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const ManageEquipment = () => {
   const { t, formatPrice } = useLanguage();
-  const listings = useListings();
+  const { data: listings = [] } = useListings("admin");
+  const setStatus = useSetListingStatus();
+  const toggleFeaturedListing = useToggleListingFeatured();
+  const removeListing = useRemoveListing();
+  const listingCategories = useMemo(() => listingCategoriesOf(listings), [listings]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -78,7 +82,7 @@ const ManageEquipment = () => {
   );
 
   const handleStatusChange = (id: string, newStatus: ListingStatus) => {
-    setListingStatus(id, newStatus);
+    setStatus.mutate({ id, status: newStatus });
     toast({
       title: "Statut modifié",
       description: `L'équipement a été ${newStatus === "approved" ? "approuvé" : newStatus === "rejected" ? "rejeté" : "mis en attente"}.`
@@ -86,7 +90,7 @@ const ManageEquipment = () => {
   };
 
   const toggleFeatured = (id: string, currentFeatured: boolean) => {
-    toggleListingFeatured(id);
+    toggleFeaturedListing.mutate({ id, featured: !currentFeatured });
     toast({
       title: currentFeatured ? "Retiré des équipements mis en avant" : "Ajouté aux équipements mis en avant",
       description: "Le statut mis en avant a été modifié avec succès."
@@ -94,7 +98,7 @@ const ManageEquipment = () => {
   };
 
   const handleDelete = (id: string, name: string) => {
-    removeListing(id);
+    removeListing.mutate(id);
     toast({
       title: "Équipement supprimé",
       description: `${name} a été retiré de la plateforme.`,

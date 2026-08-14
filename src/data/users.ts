@@ -1,4 +1,5 @@
-import { createStore, useStore } from "./store";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isSupabaseConfigured, requireSupabase } from "@/lib/supabase";
 
 export type UserRole = "admin" | "client" | "owner";
 export type UserStatus = "active" | "inactive" | "suspended";
@@ -17,136 +18,105 @@ export interface PlatformUser {
 }
 
 /**
- * Annuaire de départ, affiché dans l'administration.
- * Exporté pour que `scripts/generate-seed.mjs` produise le jeu de données SQL.
+ * Annuaire de la plateforme.
+ *
+ * Il vivait dans localStorage : suspendre un compte depuis l'administration
+ * n'avait d'effet que sur le navigateur qui avait cliqué. Il lit maintenant la
+ * table des profils, que les règles de sécurité réservent à l'administration —
+ * un compte client n'y voit que le sien.
  */
-export const seedUsers: PlatformUser[] = [
-  {
-    id: "1",
-    name: "Jean Dupont",
-    email: "jean.dupont@example.com",
-    role: "client",
-    status: "active",
-    joinDate: "2023-01-15",
-    lastLogin: "2023-08-10",
-    rentals: 5,
-    orders: 3,
-  },
-  {
-    id: "2",
-    name: "Marie Martin",
-    email: "marie.martin@example.com",
-    role: "owner",
-    status: "active",
-    joinDate: "2023-02-20",
-    lastLogin: "2023-08-05",
-    rentals: 0,
-    orders: 0,
-    equipments: 7,
-  },
-  {
-    id: "3",
-    name: "Paul Bernard",
-    email: "paul.bernard@example.com",
-    role: "client",
-    status: "inactive",
-    joinDate: "2023-03-10",
-    lastLogin: "2023-06-15",
-    rentals: 1,
-    orders: 0,
-  },
-  {
-    id: "4",
-    name: "Sophie Dubois",
-    email: "sophie.dubois@example.com",
-    role: "client",
-    status: "suspended",
-    joinDate: "2023-04-05",
-    lastLogin: "2023-05-22",
-    rentals: 0,
-    orders: 2,
-  },
-  {
-    id: "5",
-    name: "Thomas Leroy",
-    email: "thomas.leroy@example.com",
-    role: "admin",
-    status: "active",
-    joinDate: "2022-11-08",
-    lastLogin: "2023-08-12",
-    rentals: 0,
-    orders: 0,
-  },
-  {
-    id: "6",
-    name: "Laura Petit",
-    email: "laura.petit@example.com",
-    role: "owner",
-    status: "active",
-    joinDate: "2023-01-30",
-    lastLogin: "2023-08-01",
-    rentals: 0,
-    orders: 0,
-    equipments: 3,
-  },
-];
+const iso = (value?: string) => (value ? value.slice(0, 10) : "");
 
-const usersStore = createStore("btp-users", seedUsers);
+/* eslint-disable @typescript-eslint/no-explicit-any -- lignes brutes de PostgREST */
+const toUser = (
+  row: any,
+  totals: { rentals: number; orders: number; equipments: number },
+): PlatformUser => ({
+  id: row.id,
+  name: row.name,
+  email: row.email,
+  role: row.role,
+  status: row.status,
+  joinDate: iso(row.created_at),
+  lastLogin: iso(row.last_login_at),
+  rentals: totals.rentals,
+  orders: totals.orders,
+  // Seul un loueur a un parc : l'affichage distingue l'absence du zéro.
+  equipments: row.role === "owner" ? totals.equipments : undefined,
+});
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
-/** Utilisateurs courants, avec re-rendu à chaque modification. */
-export const useUsers = (): PlatformUser[] => useStore(usersStore);
+const countBy = (rows: { key: string }[]) => {
+  const counts = new Map<string, number>();
+  for (const row of rows) counts.set(row.key, (counts.get(row.key) ?? 0) + 1);
+  return counts;
+};
 
-export const setUserStatus = (id: string, status: UserStatus) =>
-  usersStore.set((items) =>
-    items.map((item) => (item.id === id ? { ...item, status } : item)),
-  );
+export const useUsers = () =>
+  useQuery({
+    queryKey: ["users"],
+    queryFn: async (): Promise<PlatformUser[]> => {
+      if (!isSupabaseConfigured) return [];
 
-export const removeUser = (id: string) =>
-  usersStore.set((items) => items.filter((item) => item.id !== id));
+      const supabase = requireSupabase();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, name, email, role, status, created_at, last_login_at")
+        .order("name");
 
-export interface DemoAccount {
-  email: string;
-  password: string;
-  name: string;
-  role: UserRole;
-  /** Clé du dictionnaire i18n décrivant ce que permet le compte. */
-  descriptionKey: string;
-}
+      if (error) throw error;
+
+      // Les compteurs sont dérivés, jamais recopiés sur le profil : une valeur
+      // stockée s'écarterait du réel à la première réservation annulée.
+      const [bookings, orders, equipment] = await Promise.all([
+        supabase.from("bookings").select("renter_id"),
+        supabase.from("orders").select("user_id"),
+        supabase.from("equipment").select("owner_id"),
+      ]);
+
+      const rentals = countBy((bookings.data ?? []).map((r) => ({ key: r.renter_id })));
+      const orderCounts = countBy((orders.data ?? []).map((r) => ({ key: r.user_id })));
+      const parcs = countBy((equipment.data ?? []).map((r) => ({ key: r.owner_id })));
+
+      return (data ?? []).map((row) =>
+        toUser(row, {
+          rentals: rentals.get(row.id) ?? 0,
+          orders: orderCounts.get(row.id) ?? 0,
+          equipments: parcs.get(row.id) ?? 0,
+        }),
+      );
+    },
+  });
+
+const useUserMutation = <TVariables>(run: (variables: TVariables) => Promise<void>) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: run,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+};
+
+export const useSetUserStatus = () =>
+  useUserMutation<{ id: string; status: UserStatus }>(async ({ id, status }) => {
+    const { error } = await requireSupabase()
+      .from("profiles")
+      .update({ status })
+      .eq("id", id);
+
+    if (error) throw error;
+  });
 
 /**
- * Comptes de démonstration.
+ * Supprime un compte, profil et authentification compris.
  *
- * ⚠️ Il n'y a pas encore de backend : ces identifiants sont vérifiés côté client
- * et ne protègent rien. Ils remplacent l'ancien sélecteur de rôle libre — qui
- * accordait le rôle administrateur en un clic — le temps de brancher une vraie
- * authentification serveur. À supprimer le jour où l'API arrive.
+ * Passe par une fonction serveur : effacer seulement le profil laisserait un
+ * compte capable de se connecter sur une session sans profil.
  */
-export const demoAccounts: DemoAccount[] = [
-  {
-    email: "client@btp.demo",
-    password: "Buildora123",
-    name: "Jean Dupont",
-    role: "client",
-    descriptionKey: "auth.demo.client",
-  },
-  {
-    email: "loueur@btp.demo",
-    password: "Buildora123",
-    name: "Marie Martin",
-    role: "owner",
-    descriptionKey: "auth.demo.owner",
-  },
-  {
-    email: "admin@btp.demo",
-    password: "Buildora123",
-    name: "Thomas Leroy",
-    role: "admin",
-    descriptionKey: "auth.demo.admin",
-  },
-];
-
-export const findDemoAccount = (email: string, password: string): DemoAccount | undefined =>
-  demoAccounts.find(
-    (account) =>
-      account.email.toLowerCase() === email.trim().toLowerCase() && account.password === password,
-  );
+export const useRemoveUser = () =>
+  useUserMutation<string>(async (id) => {
+    const { error } = await requireSupabase().rpc("admin_delete_user", { target: id });
+    if (error) throw error;
+  });

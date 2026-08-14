@@ -50,14 +50,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { useUsers, setUserStatus, removeUser } from "@/data/users";
+import { useUsers, useSetUserStatus, useRemoveUser } from "@/data/users";
 import type { UserStatus } from "@/data/users";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
+const formatDay = (value: string) =>
+  value ? new Date(value).toLocaleDateString() : "—";
+
 const UserManagement = () => {
   const { t } = useLanguage();
-  const usersData = useUsers();
+  const { data: usersData = [] } = useUsers();
+  const setUserStatus = useSetUserStatus();
+  const removeUser = useRemoveUser();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -88,7 +93,7 @@ const UserManagement = () => {
   };
 
   const confirmDelete = () => {
-    if (selectedUserId) removeUser(selectedUserId);
+    if (selectedUserId) removeUser.mutate(selectedUserId);
     toast({
       title: t("bo.userDeleted"),
       description: t("bo.userDeletedDesc")
@@ -104,7 +109,7 @@ const UserManagement = () => {
       suspended: "suspendu",
     };
 
-    setUserStatus(id, newStatus);
+    setUserStatus.mutate({ id, status: newStatus });
     toast({
       title: `Utilisateur ${statusMessages[newStatus]}`,
       description: "Le statut de l'utilisateur a été mis à jour avec succès.",
@@ -240,8 +245,8 @@ const UserManagement = () => {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>{new Date(user.joinDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(user.lastLogin).toLocaleDateString()}</TableCell>
+                      <TableCell>{formatDay(user.joinDate)}</TableCell>
+                      <TableCell>{formatDay(user.lastLogin)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

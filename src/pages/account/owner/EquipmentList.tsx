@@ -34,13 +34,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { useListings, removeListing } from "@/data/listings";
+import { useListings, useRemoveListing } from "@/data/listings";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 
 const EquipmentList = () => {
   const { t, formatPrice } = useLanguage();
-  const listings = useListings();
+  const { data: listings = [] } = useListings("owner");
+  const removeListing = useRemoveListing();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredEquipment = listings.filter(
@@ -48,7 +49,7 @@ const EquipmentList = () => {
   );
 
   const handleDelete = (id: string) => {
-    removeListing(id);
+    removeListing.mutate(id);
     toast({
       title: t("bo.equipmentDeleted"),
       description: t("bo.equipmentDeletedDesc")

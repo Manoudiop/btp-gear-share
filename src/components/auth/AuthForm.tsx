@@ -17,7 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAuth } from "@/contexts/AuthContext";
-import { demoAccounts, type UserRole } from "@/data/users";
+import { demoAccounts } from "@/data/demoAccounts";
+import type { UserRole } from "@/data/users";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { useLanguage } from "@/contexts/LanguageContext";
 

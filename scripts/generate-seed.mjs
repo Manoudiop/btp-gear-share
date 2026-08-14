@@ -13,8 +13,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-// `users.ts` importe le magasin d'état, qui importe React. Rien n'est appelé
-// ici : un module de remplacement suffit à satisfaire l'import.
+// Les données du catalogue vivent dans des modules qui peuvent importer React.
+// Rien n'est appelé ici : un module de remplacement suffit à satisfaire l'import.
 const REACT_STUB = `
 export const useEffect = () => {};
 export const useState = (initial) => [typeof initial === "function" ? initial() : initial, () => {}];
@@ -45,7 +45,7 @@ const main = async () => {
       contents: `
         export { equipment } from "./src/data/equipment.ts";
         export { materials } from "./src/data/materials.ts";
-        export { seedUsers as users, demoAccounts } from "./src/data/users.ts";
+        export { demoAccounts } from "./src/data/demoAccounts.ts";
       `,
       resolveDir: process.cwd(),
       loader: "ts",
@@ -58,7 +58,7 @@ const main = async () => {
     logLevel: "silent",
   });
 
-  const { equipment, materials, users, demoAccounts } = await import(
+  const { equipment, materials, demoAccounts } = await import(
     pathToFileURL(bundle).href
   );
 
@@ -84,15 +84,6 @@ const main = async () => {
     push(
       `update profiles set name = ${quote(account.name)}, role = ${quote(account.role)}::user_role ` +
         `where email = ${quote(account.email)};`,
-    );
-  });
-  push();
-
-  push("-- Rattache les profils de l'annuaire fictif, s'ils existent.");
-  users.forEach((user) => {
-    push(
-      `update profiles set name = ${quote(user.name)}, role = ${quote(user.role)}::user_role, ` +
-        `status = ${quote(user.status)}::user_status where email = ${quote(user.email)};`,
     );
   });
   push();
@@ -208,7 +199,7 @@ where p.email = 'client@btp.demo' and m.name = ${quote(item.name)}
   await rm(dir, { recursive: true, force: true });
 
   console.log(
-    `seed.sql généré : ${equipment.length} équipements, ${materials.length} matériaux, ${users.length} profils`,
+    `seed.sql généré : ${equipment.length} équipements, ${materials.length} matériaux`,
   );
 };
 

@@ -16,14 +16,6 @@ update profiles set name = 'Jean Dupont', role = 'client'::user_role where email
 update profiles set name = 'Marie Martin', role = 'owner'::user_role where email = 'loueur@btp.demo';
 update profiles set name = 'Thomas Leroy', role = 'admin'::user_role where email = 'admin@btp.demo';
 
--- Rattache les profils de l'annuaire fictif, s'ils existent.
-update profiles set name = 'Jean Dupont', role = 'client'::user_role, status = 'active'::user_status where email = 'jean.dupont@example.com';
-update profiles set name = 'Marie Martin', role = 'owner'::user_role, status = 'active'::user_status where email = 'marie.martin@example.com';
-update profiles set name = 'Paul Bernard', role = 'client'::user_role, status = 'inactive'::user_status where email = 'paul.bernard@example.com';
-update profiles set name = 'Sophie Dubois', role = 'client'::user_role, status = 'suspended'::user_status where email = 'sophie.dubois@example.com';
-update profiles set name = 'Thomas Leroy', role = 'admin'::user_role, status = 'active'::user_status where email = 'thomas.leroy@example.com';
-update profiles set name = 'Laura Petit', role = 'owner'::user_role, status = 'active'::user_status where email = 'laura.petit@example.com';
-
 -- Équipements. Le propriétaire est rattaché par son nom de compte.
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,

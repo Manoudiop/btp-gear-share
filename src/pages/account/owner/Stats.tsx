@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { 
   CreditCard, Calendar, TrendingUp, Percent, 
   ArrowUpRight, ArrowDownRight, Users, Package, Clock
@@ -40,7 +40,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { listingCategories, useListings } from "@/data/listings";
+import { listingCategoriesOf, useListings } from "@/data/listings";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const revenueData = [
@@ -62,7 +62,8 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 const Stats = () => {
   const { t, formatPrice } = useLanguage();
-  const listings = useListings();
+  const { data: listings = [] } = useListings("owner");
+  const listingCategories = useMemo(() => listingCategoriesOf(listings), [listings]);
   const [timeRange, setTimeRange] = useState("year");
 
   // Répartition des locations par catégorie, recalculée quand le parc change.
