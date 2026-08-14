@@ -1129,6 +1129,10 @@ export const translations: Record<string, Record<Language, string>> = {
   },
   "equipment.similar": { fr: "Équipements similaires", en: "Similar equipment" },
   "equipment.bookingSent": { fr: "Réservation en cours", en: "Booking in progress" },
+  "bo.deleteFailed": {
+    fr: "La suppression a échoué. L'élément est peut-être encore utilisé.",
+    en: "Deletion failed. The item may still be in use.",
+  },
   "add.created": { fr: "Annonce déposée", en: "Listing submitted" },
   "add.createdDesc": {
     fr: "Elle sera visible dans le catalogue après validation.",

@@ -98,10 +98,16 @@ const ManageEquipment = () => {
   };
 
   const handleDelete = (id: string, name: string) => {
-    removeListing.mutate(id);
-    toast({
-      title: "Équipement supprimé",
-      description: `${name} a été retiré de la plateforme.`,
+    // Une annonce déjà réservée est retenue par la base : annoncer la
+    // suppression avant de savoir si elle a eu lieu serait mentir.
+    removeListing.mutate(id, {
+      onSuccess: () =>
+        toast({
+          title: "Équipement supprimé",
+          description: `${name} a été retiré de la plateforme.`,
+        }),
+      onError: () =>
+        toast({ title: t("bo.deleteFailed"), variant: "destructive" }),
     });
   };
 

@@ -93,7 +93,11 @@ const UserManagement = () => {
   };
 
   const confirmDelete = () => {
-    if (selectedUserId) removeUser.mutate(selectedUserId);
+    if (selectedUserId) {
+      removeUser.mutate(selectedUserId, {
+        onError: () => toast({ title: t("bo.deleteFailed"), variant: "destructive" }),
+      });
+    }
     toast({
       title: t("bo.userDeleted"),
       description: t("bo.userDeletedDesc")

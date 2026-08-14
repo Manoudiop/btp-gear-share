@@ -49,10 +49,14 @@ const EquipmentList = () => {
   );
 
   const handleDelete = (id: string) => {
-    removeListing.mutate(id);
-    toast({
-      title: t("bo.equipmentDeleted"),
-      description: t("bo.equipmentDeletedDesc")
+    // Une annonce déjà réservée est retenue par la base.
+    removeListing.mutate(id, {
+      onSuccess: () =>
+        toast({
+          title: t("bo.equipmentDeleted"),
+          description: t("bo.equipmentDeletedDesc"),
+        }),
+      onError: () => toast({ title: t("bo.deleteFailed"), variant: "destructive" }),
     });
   };
 
