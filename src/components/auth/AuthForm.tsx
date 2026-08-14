@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Lock, Eye, EyeOff, Building, UserCircle } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Building, UserCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,7 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAuth } from "@/contexts/AuthContext";
-import { demoAccounts, findDemoAccount, type UserRole } from "@/data/users";
+import { demoAccounts, type UserRole } from "@/data/users";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // Les schémas dépendent de la langue : les messages viennent de `t`.
@@ -74,7 +75,7 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { signIn, signUp } = useAuth();
   const { t } = useLanguage();
 
   const isLogin = type === "login";
@@ -100,49 +101,48 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
     form.setValue("password", password);
   };
 
-  const onSubmit = (data: LoginFormData | RegisterFormData) => {
-    if (isLogin) {
-      const account = findDemoAccount(data.email, data.password);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-      if (!account) {
-        form.setError("password", { message: t("auth.badCredentials") });
+  const onSubmit = async (data: LoginFormData | RegisterFormData) => {
+    setIsSubmitting(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(data.email, data.password);
+
+        if (error) {
+          // Les clés du dictionnaire sont traduites ici ; un message renvoyé
+          // tel quel par le serveur est affiché sans traduction.
+          form.setError("password", { message: error.startsWith("auth.") ? t(error) : error });
+          return;
+        }
+
+        toast({ title: t("auth.loginSuccess") });
+        navigate(destination, { replace: true });
         return;
       }
 
-      login({
-        id: `demo-${account.role}`,
-        name: account.name,
-        email: account.email,
-        role: account.role,
-        isAuthenticated: true,
+      const registerData = data as RegisterFormData;
+      const { error } = await signUp({
+        name: registerData.name,
+        email: registerData.email,
+        password: registerData.password,
+        role: selectedRole,
       });
+
+      if (error) {
+        form.setError("email", { message: error });
+        return;
+      }
 
       toast({
-        title: t("auth.loginSuccess"),
-        description: t("auth.welcome", { name: account.name }),
+        title: t("auth.registerSuccess"),
+        description: t("auth.registerSuccessDesc"),
       });
-
       navigate(destination, { replace: true });
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Inscription : compte local, sans admin possible.
-    const registerData = data as RegisterFormData;
-
-    login({
-      id: `user-${Date.now()}`,
-      name: registerData.name,
-      email: registerData.email,
-      role: selectedRole,
-      isAuthenticated: true,
-    });
-
-    toast({
-      title: t("auth.registerSuccess"),
-      description: t("auth.registerSuccessDesc"),
-    });
-
-    navigate(destination, { replace: true });
   };
 
   return (
@@ -299,7 +299,8 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
             </div>
           )}
 
-          <Button type="submit" className="w-full mt-6">
+          <Button type="submit" className="w-full mt-6" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isLogin ? t("auth.signIn") : t("auth.signUp")}
           </Button>
         </form>
@@ -308,7 +309,9 @@ const AuthForm = ({ type, redirectTo = "/account" }: AuthFormProps) => {
       {isLogin && (
         <div className="mt-6 rounded-lg border border-dashed p-4">
           <p className="text-sm font-medium mb-1">{t("auth.demoTitle")}</p>
-          <p className="text-xs text-muted-foreground mb-3">{t("auth.demoDesc")}</p>
+          <p className="text-xs text-muted-foreground mb-3">
+            {t(isSupabaseConfigured ? "auth.demoDescLive" : "auth.demoDesc")}
+          </p>
           <div className="space-y-2">
             {demoAccounts.map((account) => (
               <button

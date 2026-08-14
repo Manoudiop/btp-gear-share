@@ -80,8 +80,8 @@ const Navbar = () => {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 

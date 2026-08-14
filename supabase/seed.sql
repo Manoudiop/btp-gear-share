@@ -31,7 +31,7 @@ select p.id, 'Pelleteuse Caterpillar 320', 'Pelleteuse hydraulique Caterpillar 3
   'available'::listing_availability,
   false, '1h'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,
@@ -45,7 +45,7 @@ select p.id, 'Chargeuse JCB 437', 'Chargeuse sur pneus JCB 437 avec godet haute 
   'available'::listing_availability,
   false, '2h'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,
@@ -59,7 +59,7 @@ select p.id, 'Camion benne Volvo FMX', 'Camion benne Volvo FMX 8x4 d''une capaci
   'available'::listing_availability,
   false, '30 min'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,
@@ -73,7 +73,7 @@ select p.id, 'Bétonnière PRO 350L', 'Bétonnière professionnelle de 350 litre
   'maintenance'::listing_availability,
   false, '3h'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,
@@ -87,7 +87,7 @@ select p.id, 'Marteau piqueur Bosch GSH 27', 'Marteau piqueur Bosch GSH 27 VC de
   'available'::listing_availability,
   false, '2h'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,
@@ -101,7 +101,7 @@ select p.id, 'Échafaudage modulaire 8m', 'Échafaudage de façade modulaire d''
   'available'::listing_availability,
   false, '4h'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,
@@ -115,7 +115,7 @@ select p.id, 'Pelleteuse Hitachi ZX350', 'Pelle sur chenilles Hitachi ZX350LC-6 
   'available'::listing_availability,
   false, '1h'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,
@@ -129,7 +129,7 @@ select p.id, 'Mini pelle Kubota KX91-3', 'Mini pelle Kubota KX91-3 de 3,5 tonnes
   'available'::listing_availability,
   false, '1h30'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 insert into equipment (
   owner_id, name, description, category, price_per_day, deposit, location,
@@ -143,7 +143,7 @@ select p.id, 'Scie circulaire Makita', 'Scie circulaire Makita 5008MG à lame de
   'available'::listing_availability,
   false, '5h'
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;
+on conflict (owner_id, name) do nothing;
 
 -- Matériaux.
 insert into materials (
@@ -154,19 +154,19 @@ insert into materials (
   'Sable', 45, 'tonne', 1,
   20, 500, 'Lyon', 'https://images.unsplash.com/photo-1582469566055-5216648cc753?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   array['Granulométrie 0/4mm', 'Sable lavé', 'Conforme aux normes européennes', 'Livraison possible'], '{"granulometry":"0/4mm","density":"1.6 t/m³","source":"Carrière certifiée","color":"Beige","packaging":"Vrac"}', true
-) on conflict do nothing;
+) on conflict (name) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Standard', '3-5 jours', 50
 from materials m where m.name = 'Sable de construction fin'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Express', '24h', 90
 from materials m where m.name = 'Sable de construction fin'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Sur-mesure', 'À convenir', null
 from materials m where m.name = 'Sable de construction fin'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 
 insert into materials (
   supplier_name, name, description, category, price, unit, min_order, max_order,
@@ -176,15 +176,15 @@ insert into materials (
   'Ciment', 95, 'tonne', 0.5,
   10, 200, 'Paris', 'https://images.unsplash.com/photo-1604163546180-039a1781c0d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   array['Prise rapide', 'Résistance 32.5 MPa', 'Conditionnement en sacs ou vrac', 'Excellente maniabilité'], '{"type":"CEM II/B-L 32,5 R","resistance":"32.5 MPa","setting":"Prise normale","packaging":"Sacs 35kg ou vrac","color":"Gris"}', true
-) on conflict do nothing;
+) on conflict (name) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Standard', '2-4 jours', 60
 from materials m where m.name = 'Ciment Portland 32.5'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Express', '24h', 100
 from materials m where m.name = 'Ciment Portland 32.5'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 
 insert into materials (
   supplier_name, name, description, category, price, unit, min_order, max_order,
@@ -194,15 +194,15 @@ insert into materials (
   'Béton', 110, 'm³', 1,
   15, 150, 'Marseille', 'https://images.unsplash.com/photo-1566027310713-1d34d3c2c654?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   array['Classe d''exposition XC2', 'Consistance S3', 'Taille des granulats 16mm', 'Pompage possible'], '{"class":"C25/30","exposure":"XC2","consistency":"S3","aggregates":"16mm","cement":"CEM II"}', true
-) on conflict do nothing;
+) on conflict (name) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Standard', 'Sur rendez-vous', 80
 from materials m where m.name = 'Béton prêt à l''emploi C25/30'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Express', '24h', 150
 from materials m where m.name = 'Béton prêt à l''emploi C25/30'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 
 insert into materials (
   supplier_name, name, description, category, price, unit, min_order, max_order,
@@ -212,15 +212,15 @@ insert into materials (
   'Agrégats', 38, 'tonne', 1,
   30, 800, 'Nîmes', 'https://images.unsplash.com/photo-1518406432532-9cbef5697723?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   array['Calibre 20/40mm', 'Roche calcaire concassée', 'Excellent drainage', 'Livraison en vrac'], '{"granulometry":"20/40mm","density":"1.5 t/m³","source":"Carrière certifiée","color":"Gris clair","packaging":"Vrac ou big bag"}', true
-) on conflict do nothing;
+) on conflict (name) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Standard', '3-5 jours', 45
 from materials m where m.name = 'Gravier 20/40mm'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Express', '48h', 85
 from materials m where m.name = 'Gravier 20/40mm'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 
 insert into materials (
   supplier_name, name, description, category, price, unit, min_order, max_order,
@@ -230,11 +230,11 @@ insert into materials (
   'Terre', 55, 'm³', 1,
   25, 0, 'Bordeaux', 'https://images.unsplash.com/photo-1595915636540-3142ee10d19c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   array['Criblée à 20mm', 'Amendée en compost végétal', 'Sans cailloux ni racines', 'pH neutre'], '{"screening":"20mm","organicMatter":"12 %","ph":"6,8","density":"1.3 t/m³","packaging":"Vrac"}', false
-) on conflict do nothing;
+) on conflict (name) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Standard', '5-7 jours', 55
 from materials m where m.name = 'Terre végétale amendée'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 
 insert into materials (
   supplier_name, name, description, category, price, unit, min_order, max_order,
@@ -244,14 +244,14 @@ insert into materials (
   'Sable', 52, 'tonne', 1,
   20, 350, 'Lyon', 'https://images.unsplash.com/photo-1600007277799-44736c28e2f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
   array['Granulométrie 0/2mm', 'Grains roulés', 'Lavé et séché', 'Idéal enduits de finition'], '{"granulometry":"0/2mm","density":"1.5 t/m³","source":"Rivière","color":"Ocre clair","packaging":"Vrac ou big bag"}', true
-) on conflict do nothing;
+) on conflict (name) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Standard', '3-5 jours', 50
 from materials m where m.name = 'Sable de rivière lavé'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 insert into delivery_options (material_id, type, delay, price)
 select m.id, 'Express', '24h', 90
 from materials m where m.name = 'Sable de rivière lavé'
-on conflict do nothing;
+on conflict (material_id, type) do nothing;
 
 commit;

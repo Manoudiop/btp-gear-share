@@ -1325,6 +1325,10 @@ export const translations: Record<string, Record<Language, string>> = {
     fr: "L'authentification est simulée côté client, en attendant le backend.",
     en: "Authentication is simulated client-side until the backend is connected.",
   },
+  "auth.demoDescLive": {
+    fr: "Comptes de test réels, à supprimer avant une mise en production.",
+    en: "Real test accounts — remove them before going live.",
+  },
   "auth.demo.client": {
     fr: "Louer du matériel et commander des matériaux",
     en: "Rent equipment and order materials",

@@ -1,6 +1,15 @@
-
-import { createContext, useContext, ReactNode, useCallback, useMemo, useState } from "react";
-import type { UserRole } from "@/data/users";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import type { Session } from "@supabase/supabase-js";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { findDemoAccount, type UserRole } from "@/data/users";
 
 export type { UserRole };
 
@@ -12,37 +21,41 @@ export interface AuthUser {
   isAuthenticated: boolean;
 }
 
+export interface SignUpInput {
+  name: string;
+  email: string;
+  password: string;
+  role: Extract<UserRole, "client" | "owner">;
+}
+
 interface AuthContextType {
   user: AuthUser | null;
-  login: (userData: AuthUser) => void;
-  logout: () => void;
+  /** Vrai tant que la session n'a pas été résolue au premier chargement. */
+  isLoading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (input: SignUpInput) => Promise<{ error?: string }>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isClient: boolean;
   isOwner: boolean;
 }
 
-const STORAGE_KEY = "authUser";
+const DEMO_STORAGE_KEY = "authUser";
 const VALID_ROLES: UserRole[] = ["admin", "client", "owner"];
 
 /**
- * Relit la session depuis localStorage.
- *
- * Lu de façon synchrone à l'initialisation du state : quand cette lecture se
- * faisait dans un useEffect, le premier rendu était toujours « non connecté » et
- * un simple rafraîchissement sur une page privée renvoyait vers /login.
+ * Session de démonstration, utilisée seulement quand aucun projet Supabase
+ * n'est configuré : le dépôt reste ainsi exécutable sans compte.
  */
-const readStoredUser = (): AuthUser | null => {
+const readDemoUser = (): AuthUser | null => {
   if (typeof window === "undefined") return null;
 
-  const stored = window.localStorage.getItem(STORAGE_KEY);
+  const stored = window.localStorage.getItem(DEMO_STORAGE_KEY);
   if (!stored) return null;
 
   try {
     const parsed = JSON.parse(stored) as Partial<AuthUser>;
-
-    // Le contenu du localStorage est modifiable par l'utilisateur : on ne garde
-    // qu'une session dont la forme et le rôle sont valides.
     if (
       typeof parsed?.id !== "string" ||
       typeof parsed?.email !== "string" ||
@@ -50,40 +63,137 @@ const readStoredUser = (): AuthUser | null => {
       !VALID_ROLES.includes(parsed?.role as UserRole) ||
       parsed?.isAuthenticated !== true
     ) {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(DEMO_STORAGE_KEY);
       return null;
     }
-
     return parsed as AuthUser;
   } catch {
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(DEMO_STORAGE_KEY);
     return null;
   }
 };
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  login: () => {},
-  logout: () => {},
-  isAuthenticated: false,
-  isAdmin: false,
-  isClient: false,
-  isOwner: false,
-});
-
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(readStoredUser);
+  const [user, setUser] = useState<AuthUser | null>(() =>
+    isSupabaseConfigured ? null : readDemoUser(),
+  );
+  // Sans backend la session est lue de façon synchrone : rien à attendre.
+  const [isLoading, setIsLoading] = useState(isSupabaseConfigured);
 
-  const login = useCallback((userData: AuthUser) => {
-    setUser(userData);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+  /**
+   * Recompose l'utilisateur applicatif : Supabase porte l'identité, la table
+   * `profiles` porte le nom et le rôle.
+   */
+  const loadProfile = useCallback(async (session: Session | null) => {
+    if (!session?.user || !supabase) {
+      setUser(null);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("name, role")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Profil illisible :", error.message);
+    }
+
+    setUser({
+      id: session.user.id,
+      email: session.user.email ?? "",
+      // Le déclencheur crée le profil à l'inscription ; on reste prudent au cas
+      // où il aurait échoué, plutôt que de laisser l'écran vide.
+      name: data?.name ?? session.user.email?.split("@")[0] ?? "",
+      role: (data?.role as UserRole) ?? "client",
+      isAuthenticated: true,
+    });
   }, []);
 
-  const logout = useCallback(() => {
+  useEffect(() => {
+    if (!supabase) return;
+
+    let active = true;
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!active) return;
+      await loadProfile(data.session);
+      setIsLoading(false);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      void loadProfile(session);
+    });
+
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [loadProfile]);
+
+  const signIn = useCallback(
+    async (email: string, password: string): Promise<{ error?: string }> => {
+      if (!supabase) {
+        const account = findDemoAccount(email, password);
+        if (!account) return { error: "auth.badCredentials" };
+
+        const demoUser: AuthUser = {
+          id: `demo-${account.role}`,
+          name: account.name,
+          email: account.email,
+          role: account.role,
+          isAuthenticated: true,
+        };
+        window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(demoUser));
+        setUser(demoUser);
+        return {};
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      return error ? { error: "auth.badCredentials" } : {};
+    },
+    [],
+  );
+
+  const signUp = useCallback(async (input: SignUpInput): Promise<{ error?: string }> => {
+    if (!supabase) {
+      const demoUser: AuthUser = {
+        id: `user-${Date.now()}`,
+        name: input.name,
+        email: input.email,
+        role: input.role,
+        isAuthenticated: true,
+      };
+      window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(demoUser));
+      setUser(demoUser);
+      return {};
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email: input.email.trim(),
+      password: input.password,
+      // Reprises par le déclencheur `handle_new_user`, qui borne le rôle.
+      options: { data: { name: input.name, role: input.role } },
+    });
+
+    return error ? { error: error.message } : {};
+  }, []);
+
+  const logout = useCallback(async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    } else {
+      window.localStorage.removeItem(DEMO_STORAGE_KEY);
+    }
     setUser(null);
-    window.localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   const value = useMemo<AuthContextType>(() => {
@@ -91,14 +201,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return {
       user,
-      login,
+      isLoading,
+      signIn,
+      signUp,
       logout,
       isAuthenticated,
       isAdmin: isAuthenticated && user?.role === "admin",
       isClient: isAuthenticated && user?.role === "client",
       isOwner: isAuthenticated && user?.role === "owner",
     };
-  }, [user, login, logout]);
+  }, [user, isLoading, signIn, signUp, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
 };

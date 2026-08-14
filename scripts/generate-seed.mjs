@@ -74,7 +74,8 @@ const main = async () => {
   demoAccounts.forEach((account) => push(`--   ${account.email} (${account.role})`));
   push();
 
-  // Un identifiant stable par enregistrement rend le script rejouable.
+  // Les clauses `on conflict` s'appuient sur les contraintes d'unicité posées
+  // par la migration 0003 : le fichier peut être rejoué sans dupliquer.
   push("begin;");
   push();
   push("-- Rattache les profils aux comptes créés dans l'authentification.");
@@ -100,7 +101,7 @@ select p.id, ${quote(item.name)}, ${quote(item.description)}, ${quote(item.categ
   ${item.isAvailable ? "'available'" : "'maintenance'"}::listing_availability,
   false, ${quote(item.ownerResponseTime)}
 from profiles p where p.role = 'owner' limit 1
-on conflict do nothing;`);
+on conflict (owner_id, name) do nothing;`);
     push();
   });
 
@@ -114,14 +115,14 @@ on conflict do nothing;`);
   ${quote(item.category)}, ${item.price}, ${quote(item.unit)}, ${item.minOrder},
   ${item.maxOrder}, ${item.stock}, ${quote(item.location)}, ${quote(item.image)},
   ${array(item.features)}, ${json(item.specifications)}, ${bool(item.isAvailable)}
-) on conflict do nothing;`);
+) on conflict (name) do nothing;`);
 
     (item.deliveryOptions ?? []).forEach((option) => {
       const price = typeof option.price === "number" ? option.price : "null";
       push(`insert into delivery_options (material_id, type, delay, price)
 select m.id, ${quote(option.type)}, ${quote(option.delay)}, ${price}
 from materials m where m.name = ${quote(item.name)}
-on conflict do nothing;`);
+on conflict (material_id, type) do nothing;`);
     });
     push();
   });

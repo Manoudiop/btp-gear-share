@@ -62,8 +62,8 @@ const AccountLayout = ({ title, children }: AccountLayoutProps) => {
   // le layout est monté hors d'une route protégée.
   if (!user) return null;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 
