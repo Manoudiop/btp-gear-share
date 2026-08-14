@@ -137,6 +137,70 @@ on conflict (material_id, type) do nothing;`);
     push();
   });
 
+  push("-- Avis, questions et disponibilités.");
+  push("-- L'auteur est le compte client de démonstration : les avis du catalogue");
+  push("-- front n'ont pas d'utilisateur associé.");
+  push();
+
+  equipment.forEach((item) => {
+    (item.reviews ?? []).forEach((review) => {
+      push(`insert into reviews (author_id, equipment_id, rating, comment)
+select p.id, e.id, ${review.rating}, ${quote(review.comment)}
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = ${quote(item.name)}
+  and not exists (
+    select 1 from reviews r where r.equipment_id = e.id and r.comment = ${quote(review.comment)}
+  );`);
+    });
+
+    (item.questionsAnswers ?? []).forEach((qa) => {
+      push(`insert into questions (author_id, equipment_id, question, answer, answered_at)
+select p.id, e.id, ${quote(qa.question)}, ${quote(qa.answer)}, now()
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = ${quote(item.name)}
+  and not exists (
+    select 1 from questions q where q.equipment_id = e.id and q.question = ${quote(qa.question)}
+  );`);
+    });
+
+    // Les dates sont relatives à aujourd'hui : un jeu figé se périmerait.
+    (item.availabilityDates ?? []).forEach((_, index) => {
+      const offset = index + 2;
+      push(`insert into equipment_availability (equipment_id, day)
+select e.id, current_date + ${offset}
+from equipment e where e.name = ${quote(item.name)}
+on conflict do nothing;`);
+    });
+    push();
+  });
+
+  materials.forEach((item) => {
+    (item.reviews ?? []).forEach((review) => {
+      push(`insert into reviews (author_id, material_id, rating, comment)
+select p.id, m.id, ${review.rating}, ${quote(review.comment)}
+from profiles p, materials m
+where p.email = 'client@btp.demo' and m.name = ${quote(item.name)}
+  and not exists (
+    select 1 from reviews r where r.material_id = m.id and r.comment = ${quote(review.comment)}
+  );`);
+    });
+  });
+  push();
+
+  // Passe en dernier : le déclencheur `refresh_rating` recalcule la note depuis
+  // les avis insérés ci-dessus, or le catalogue front porte une note d'ensemble
+  // qui ne se résume pas à ce court échantillon.
+  push("-- Note d'ensemble du catalogue, rétablie après le calcul du déclencheur.");
+  equipment.forEach((item) => {
+    push(
+      `update equipment set rating = ${item.rating} where name = ${quote(item.name)};`,
+    );
+  });
+  materials.forEach((item) => {
+    push(`update materials set rating = ${item.rating} where name = ${quote(item.name)};`);
+  });
+  push();
+
   push("commit;");
   push();
 

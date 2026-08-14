@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { getEquipmentById, getSimilarEquipment } from "@/data/equipment";
+import { useEquipmentDetail, useSimilarEquipment } from "@/data/queries";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { categoryLabel } from "@/data/categoryIcons";
 import Seo from "@/components/Seo";
@@ -26,7 +26,20 @@ const EquipmentDetails = () => {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
 
-  const equipment = getEquipmentById(id);
+  const { data: equipment, isLoading } = useEquipmentDetail(id);
+  const { data: similar = [] } = useSimilarEquipment(equipment);
+
+  if (isLoading) {
+    return (
+      <div className="section-container flex min-h-[60vh] items-center justify-center">
+        <div
+          role="status"
+          aria-label={t("common.loading")}
+          className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary"
+        />
+      </div>
+    );
+  }
 
   if (!equipment) {
     return (
@@ -441,7 +454,7 @@ const EquipmentDetails = () => {
         <div className="mt-16">
           <h2 className="text-2xl font-bold mb-6">{t("equipment.similar")}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {getSimilarEquipment(equipment.id)
+            {similar
               .map((item) => (
                 <div key={item.id} className="bg-white rounded-xl overflow-hidden shadow-subtle">
                   <div className="aspect-[4/3] overflow-hidden">

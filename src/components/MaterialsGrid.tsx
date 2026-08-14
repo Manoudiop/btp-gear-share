@@ -5,6 +5,7 @@ import { ArrowUpDown } from "lucide-react";
 import CategoryButton from "./CategoryButton";
 import MaterialCard from "./MaterialCard";
 import SearchBar from "./SearchBar";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { materials } from "@/data/materials";
+import { useMaterialList } from "@/data/queries";
 import { ALL_CATEGORIES, materialCategoryOptions, categoryLabel } from "@/data/categoryIcons";
 import type { Material } from "@/data/types";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -21,6 +22,7 @@ type SortOption = "relevance" | "price-asc" | "price-desc" | "rating";
 
 const MaterialsGrid = () => {
   const { t } = useLanguage();
+  const { data: materials = [], isLoading, isError, refetch } = useMaterialList();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get("category") ?? ALL_CATEGORIES;
   const query = searchParams.get("q")?.toLowerCase() ?? "";
@@ -59,7 +61,7 @@ const MaterialsGrid = () => {
     };
 
     return [...bySearch].sort(sorters[sortBy]);
-  }, [activeCategory, query, sortBy]);
+  }, [materials, activeCategory, query, sortBy]);
 
   return (
     <div className="section-container">
@@ -108,7 +110,20 @@ const MaterialsGrid = () => {
           </Select>
         </div>
 
-        {filteredMaterials.length > 0 ? (
+        {isError ? (
+          <div className="py-12 text-center">
+            <p className="mb-4 text-muted-foreground">{t("common.loadError")}</p>
+            <Button variant="outline" onClick={() => refetch()}>
+              {t("common.retry")}
+            </Button>
+          </div>
+        ) : isLoading ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div key={index} className="h-80 animate-pulse rounded-xl bg-muted" />
+            ))}
+          </div>
+        ) : filteredMaterials.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredMaterials.map((material) => (
               <MaterialCard key={material.id} {...material} />

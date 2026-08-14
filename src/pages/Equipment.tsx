@@ -22,7 +22,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { equipment } from "@/data/equipment";
+import { useEquipmentList } from "@/data/queries";
 import { ALL_CATEGORIES, equipmentCategoryOptions, categoryLabel } from "@/data/categoryIcons";
 import type { Equipment as EquipmentItem } from "@/data/types";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,6 +34,7 @@ type SortOption = "relevance" | "price-asc" | "price-desc" | "rating";
 
 const Equipment = () => {
   const { t } = useLanguage();
+  const { data: equipment = [], isLoading, isError, refetch } = useEquipmentList();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get("category") ?? ALL_CATEGORIES;
   const query = searchParams.get("q")?.toLowerCase() ?? "";
@@ -75,7 +76,7 @@ const Equipment = () => {
     };
 
     return [...bySearch].sort(sorters[sortBy]);
-  }, [activeCategory, query, sortBy]);
+  }, [equipment, activeCategory, query, sortBy]);
 
   // Une catégorie ou une recherche qui change peut rendre la page courante vide.
   useEffect(() => {
@@ -90,7 +91,20 @@ const Equipment = () => {
   );
 
   const renderGrid = (items: EquipmentItem[]) =>
-    items.length > 0 ? (
+    isError ? (
+      <div className="py-12 text-center">
+        <p className="mb-4 text-muted-foreground">{t("common.loadError")}</p>
+        <Button variant="outline" onClick={() => refetch()}>
+          {t("common.retry")}
+        </Button>
+      </div>
+    ) : isLoading ? (
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }, (_, index) => (
+          <div key={index} className="h-72 animate-pulse rounded-xl bg-muted" />
+        ))}
+      </div>
+    ) : items.length > 0 ? (
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((item) => (
           <EquipmentCard key={item.id} {...item} />

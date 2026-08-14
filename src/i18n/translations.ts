@@ -62,6 +62,11 @@ export const translations: Record<string, Record<Language, string>> = {
   "common.priceDesc": { fr: "Prix décroissant", en: "Price: high to low" },
   "common.bestRated": { fr: "Meilleures notes", en: "Best rated" },
   "common.loading": { fr: "Chargement", en: "Loading" },
+  "common.loadError": {
+    fr: "Impossible de charger les données. Réessayez dans un instant.",
+    en: "Could not load the data. Please try again shortly.",
+  },
+  "common.retry": { fr: "Réessayer", en: "Retry" },
 
   // ------------------------------------------------------------------- Accueil
   "home.whyTitle": { fr: "Pourquoi choisir BTP Location ?", en: "Why choose BTP Location?" },

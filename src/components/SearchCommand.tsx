@@ -11,8 +11,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { equipment } from "@/data/equipment";
-import { materials } from "@/data/materials";
+import { useEquipmentList, useMaterialList } from "@/data/queries";
 import { categoryLabel } from "@/data/categoryIcons";
 
 interface SearchCommandProps {
@@ -32,6 +31,8 @@ const MAX_PER_GROUP = 5;
 const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
   const navigate = useNavigate();
   const { t, formatPrice } = useLanguage();
+  const { data: equipment = [] } = useEquipmentList();
+  const { data: materials = [] } = useMaterialList();
   const [query, setQuery] = useState("");
 
   // Le champ repart vide à chaque ouverture.
@@ -68,7 +69,7 @@ const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
         )
       : equipment;
     return source.slice(0, MAX_PER_GROUP);
-  }, [term]);
+  }, [equipment, term]);
 
   const matchedMaterials = useMemo(() => {
     const source = term
@@ -77,7 +78,7 @@ const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
         )
       : materials;
     return source.slice(0, MAX_PER_GROUP);
-  }, [term]);
+  }, [materials, term]);
 
   const matchedPages = useMemo(
     () => (term ? pages.filter((page) => page.label.toLowerCase().includes(term)) : pages),

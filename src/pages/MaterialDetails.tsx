@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
-import { getMaterialById, getRelatedMaterials } from "@/data/materials";
+import { useMaterialDetail, useRelatedMaterials } from "@/data/queries";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { categoryLabel } from "@/data/categoryIcons";
 import Seo from "@/components/Seo";
@@ -19,7 +19,20 @@ const MaterialDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCart();
 
-  const material = getMaterialById(id);
+  const { data: material, isLoading } = useMaterialDetail(id);
+  const { data: related = [] } = useRelatedMaterials(material);
+
+  if (isLoading) {
+    return (
+      <div className="section-container flex min-h-[60vh] items-center justify-center">
+        <div
+          role="status"
+          aria-label={t("common.loading")}
+          className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary"
+        />
+      </div>
+    );
+  }
 
   if (!material) {
     return (
@@ -359,7 +372,7 @@ const MaterialDetails = () => {
         <div className="mt-16">
           <h2 className="text-2xl font-bold mb-6">{t("materials.related")}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {getRelatedMaterials(material.id)
+            {related
               .map((item) => (
                 <div key={item.id} className="bg-white rounded-xl overflow-hidden shadow-subtle">
                   <div className="aspect-[4/3] overflow-hidden">

@@ -5,12 +5,13 @@ import CategoryButton from "./CategoryButton";
 import EquipmentCard from "./EquipmentCard";
 import SearchBar from "./SearchBar";
 import { Button } from "@/components/ui/button";
-import { equipment } from "@/data/equipment";
+import { useEquipmentList } from "@/data/queries";
 import { categoryLabel, popularEquipmentCategories } from "@/data/categoryIcons";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const EquipmentGrid = () => {
   const { t } = useLanguage();
+  const { data: equipment = [] } = useEquipmentList();
   const categories = popularEquipmentCategories;
   // Les 6 équipements les mieux notés, en guise de sélection « récents ».
   const featuredEquipment = [...equipment].sort((a, b) => b.rating - a.rating).slice(0, 6);

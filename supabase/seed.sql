@@ -260,4 +260,356 @@ select m.id, 'Express', '24h', 90
 from materials m where m.name = 'Sable de rivière lavé'
 on conflict (material_id, type) do nothing;
 
+-- Avis, questions et disponibilités.
+-- L'auteur est le compte client de démonstration : les avis du catalogue
+-- front n'ont pas d'utilisateur associé.
+
+insert into reviews (author_id, equipment_id, rating, comment)
+select p.id, e.id, 5, 'Machine en parfait état, très satisfait de la location.'
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Pelleteuse Caterpillar 320'
+  and not exists (
+    select 1 from reviews r where r.equipment_id = e.id and r.comment = 'Machine en parfait état, très satisfait de la location.'
+  );
+insert into reviews (author_id, equipment_id, rating, comment)
+select p.id, e.id, 4, 'Bon rapport qualité-prix, le propriétaire est très professionnel.'
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Pelleteuse Caterpillar 320'
+  and not exists (
+    select 1 from reviews r where r.equipment_id = e.id and r.comment = 'Bon rapport qualité-prix, le propriétaire est très professionnel.'
+  );
+insert into questions (author_id, equipment_id, question, answer, answered_at)
+select p.id, e.id, 'Est-ce que la livraison est incluse ?', 'La livraison est possible avec supplément selon la distance.', now()
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Pelleteuse Caterpillar 320'
+  and not exists (
+    select 1 from questions q where q.equipment_id = e.id and q.question = 'Est-ce que la livraison est incluse ?'
+  );
+insert into questions (author_id, equipment_id, question, answer, answered_at)
+select p.id, e.id, 'Faut-il avoir une qualification spécifique pour utiliser cet équipement ?', 'Oui, un CACES R482 catégorie C1 est nécessaire pour manipuler cette pelleteuse.', now()
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Pelleteuse Caterpillar 320'
+  and not exists (
+    select 1 from questions q where q.equipment_id = e.id and q.question = 'Faut-il avoir une qualification spécifique pour utiliser cet équipement ?'
+  );
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 2
+from equipment e where e.name = 'Pelleteuse Caterpillar 320'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 3
+from equipment e where e.name = 'Pelleteuse Caterpillar 320'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 4
+from equipment e where e.name = 'Pelleteuse Caterpillar 320'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 5
+from equipment e where e.name = 'Pelleteuse Caterpillar 320'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 6
+from equipment e where e.name = 'Pelleteuse Caterpillar 320'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 7
+from equipment e where e.name = 'Pelleteuse Caterpillar 320'
+on conflict do nothing;
+
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 2
+from equipment e where e.name = 'Chargeuse JCB 437'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 3
+from equipment e where e.name = 'Chargeuse JCB 437'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 4
+from equipment e where e.name = 'Chargeuse JCB 437'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 5
+from equipment e where e.name = 'Chargeuse JCB 437'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 6
+from equipment e where e.name = 'Chargeuse JCB 437'
+on conflict do nothing;
+
+insert into reviews (author_id, equipment_id, rating, comment)
+select p.id, e.id, 5, 'Camion impeccable, chauffeur ponctuel. Rien à redire.'
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Camion benne Volvo FMX'
+  and not exists (
+    select 1 from reviews r where r.equipment_id = e.id and r.comment = 'Camion impeccable, chauffeur ponctuel. Rien à redire.'
+  );
+insert into questions (author_id, equipment_id, question, answer, answered_at)
+select p.id, e.id, 'Le chauffeur est-il fourni avec le camion ?', 'Oui, la location se fait avec chauffeur, inclus dans le tarif journalier.', now()
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Camion benne Volvo FMX'
+  and not exists (
+    select 1 from questions q where q.equipment_id = e.id and q.question = 'Le chauffeur est-il fourni avec le camion ?'
+  );
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 2
+from equipment e where e.name = 'Camion benne Volvo FMX'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 3
+from equipment e where e.name = 'Camion benne Volvo FMX'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 4
+from equipment e where e.name = 'Camion benne Volvo FMX'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 5
+from equipment e where e.name = 'Camion benne Volvo FMX'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 6
+from equipment e where e.name = 'Camion benne Volvo FMX'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 7
+from equipment e where e.name = 'Camion benne Volvo FMX'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 8
+from equipment e where e.name = 'Camion benne Volvo FMX'
+on conflict do nothing;
+
+
+insert into reviews (author_id, equipment_id, rating, comment)
+select p.id, e.id, 5, 'Très efficace sur du béton armé, matériel bien entretenu.'
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Marteau piqueur Bosch GSH 27'
+  and not exists (
+    select 1 from reviews r where r.equipment_id = e.id and r.comment = 'Très efficace sur du béton armé, matériel bien entretenu.'
+  );
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 2
+from equipment e where e.name = 'Marteau piqueur Bosch GSH 27'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 3
+from equipment e where e.name = 'Marteau piqueur Bosch GSH 27'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 4
+from equipment e where e.name = 'Marteau piqueur Bosch GSH 27'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 5
+from equipment e where e.name = 'Marteau piqueur Bosch GSH 27'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 6
+from equipment e where e.name = 'Marteau piqueur Bosch GSH 27'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 7
+from equipment e where e.name = 'Marteau piqueur Bosch GSH 27'
+on conflict do nothing;
+
+insert into questions (author_id, equipment_id, question, answer, answered_at)
+select p.id, e.id, 'Le montage est-il assuré par le loueur ?', 'Le montage peut être assuré en option, comptez 250 € pour une façade de 8 m.', now()
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Échafaudage modulaire 8m'
+  and not exists (
+    select 1 from questions q where q.equipment_id = e.id and q.question = 'Le montage est-il assuré par le loueur ?'
+  );
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 2
+from equipment e where e.name = 'Échafaudage modulaire 8m'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 3
+from equipment e where e.name = 'Échafaudage modulaire 8m'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 4
+from equipment e where e.name = 'Échafaudage modulaire 8m'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 5
+from equipment e where e.name = 'Échafaudage modulaire 8m'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 6
+from equipment e where e.name = 'Échafaudage modulaire 8m'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 7
+from equipment e where e.name = 'Échafaudage modulaire 8m'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 8
+from equipment e where e.name = 'Échafaudage modulaire 8m'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 9
+from equipment e where e.name = 'Échafaudage modulaire 8m'
+on conflict do nothing;
+
+insert into reviews (author_id, equipment_id, rating, comment)
+select p.id, e.id, 5, 'Puissante et sobre, parfaite pour notre chantier de terrassement.'
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Pelleteuse Hitachi ZX350'
+  and not exists (
+    select 1 from reviews r where r.equipment_id = e.id and r.comment = 'Puissante et sobre, parfaite pour notre chantier de terrassement.'
+  );
+insert into reviews (author_id, equipment_id, rating, comment)
+select p.id, e.id, 4, 'Bonne machine, livraison un peu tardive le premier jour.'
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Pelleteuse Hitachi ZX350'
+  and not exists (
+    select 1 from reviews r where r.equipment_id = e.id and r.comment = 'Bonne machine, livraison un peu tardive le premier jour.'
+  );
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 2
+from equipment e where e.name = 'Pelleteuse Hitachi ZX350'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 3
+from equipment e where e.name = 'Pelleteuse Hitachi ZX350'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 4
+from equipment e where e.name = 'Pelleteuse Hitachi ZX350'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 5
+from equipment e where e.name = 'Pelleteuse Hitachi ZX350'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 6
+from equipment e where e.name = 'Pelleteuse Hitachi ZX350'
+on conflict do nothing;
+
+insert into reviews (author_id, equipment_id, rating, comment)
+select p.id, e.id, 5, 'Parfaite pour mon jardin, très maniable et propre.'
+from profiles p, equipment e
+where p.email = 'client@btp.demo' and e.name = 'Mini pelle Kubota KX91-3'
+  and not exists (
+    select 1 from reviews r where r.equipment_id = e.id and r.comment = 'Parfaite pour mon jardin, très maniable et propre.'
+  );
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 2
+from equipment e where e.name = 'Mini pelle Kubota KX91-3'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 3
+from equipment e where e.name = 'Mini pelle Kubota KX91-3'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 4
+from equipment e where e.name = 'Mini pelle Kubota KX91-3'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 5
+from equipment e where e.name = 'Mini pelle Kubota KX91-3'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 6
+from equipment e where e.name = 'Mini pelle Kubota KX91-3'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 7
+from equipment e where e.name = 'Mini pelle Kubota KX91-3'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 8
+from equipment e where e.name = 'Mini pelle Kubota KX91-3'
+on conflict do nothing;
+
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 2
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 3
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 4
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 5
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 6
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 7
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 8
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 9
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 10
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+insert into equipment_availability (equipment_id, day)
+select e.id, current_date + 11
+from equipment e where e.name = 'Scie circulaire Makita'
+on conflict do nothing;
+
+insert into reviews (author_id, material_id, rating, comment)
+select p.id, m.id, 5, 'Sable de très bonne qualité, livraison rapide.'
+from profiles p, materials m
+where p.email = 'client@btp.demo' and m.name = 'Sable de construction fin'
+  and not exists (
+    select 1 from reviews r where r.material_id = m.id and r.comment = 'Sable de très bonne qualité, livraison rapide.'
+  );
+insert into reviews (author_id, material_id, rating, comment)
+select p.id, m.id, 4, 'Bon produit, conforme à mes attentes.'
+from profiles p, materials m
+where p.email = 'client@btp.demo' and m.name = 'Sable de construction fin'
+  and not exists (
+    select 1 from reviews r where r.material_id = m.id and r.comment = 'Bon produit, conforme à mes attentes.'
+  );
+insert into reviews (author_id, material_id, rating, comment)
+select p.id, m.id, 5, 'Calibre régulier et propre, parfait pour mon hérisson.'
+from profiles p, materials m
+where p.email = 'client@btp.demo' and m.name = 'Gravier 20/40mm'
+  and not exists (
+    select 1 from reviews r where r.material_id = m.id and r.comment = 'Calibre régulier et propre, parfait pour mon hérisson.'
+  );
+insert into reviews (author_id, material_id, rating, comment)
+select p.id, m.id, 5, 'Sable très propre, rendu impeccable sur mes enduits.'
+from profiles p, materials m
+where p.email = 'client@btp.demo' and m.name = 'Sable de rivière lavé'
+  and not exists (
+    select 1 from reviews r where r.material_id = m.id and r.comment = 'Sable très propre, rendu impeccable sur mes enduits.'
+  );
+
+-- Note d'ensemble du catalogue, rétablie après le calcul du déclencheur.
+update equipment set rating = 4.8 where name = 'Pelleteuse Caterpillar 320';
+update equipment set rating = 4.6 where name = 'Chargeuse JCB 437';
+update equipment set rating = 4.9 where name = 'Camion benne Volvo FMX';
+update equipment set rating = 4.5 where name = 'Bétonnière PRO 350L';
+update equipment set rating = 4.7 where name = 'Marteau piqueur Bosch GSH 27';
+update equipment set rating = 4.4 where name = 'Échafaudage modulaire 8m';
+update equipment set rating = 4.7 where name = 'Pelleteuse Hitachi ZX350';
+update equipment set rating = 4.9 where name = 'Mini pelle Kubota KX91-3';
+update equipment set rating = 4.6 where name = 'Scie circulaire Makita';
+update materials set rating = 4.7 where name = 'Sable de construction fin';
+update materials set rating = 4.9 where name = 'Ciment Portland 32.5';
+update materials set rating = 4.8 where name = 'Béton prêt à l''emploi C25/30';
+update materials set rating = 4.6 where name = 'Gravier 20/40mm';
+update materials set rating = 4.5 where name = 'Terre végétale amendée';
+update materials set rating = 4.8 where name = 'Sable de rivière lavé';
+
 commit;
