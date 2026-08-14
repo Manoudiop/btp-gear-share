@@ -10,7 +10,13 @@
 
 begin;
 
--- Rattache les profils aux comptes créés dans l'authentification.
+-- Nomme les comptes de démonstration : le déclencheur ne dispose que de
+-- l'email à l'inscription et en déduit un nom peu présentable.
+update profiles set name = 'Jean Dupont', role = 'client'::user_role where email = 'client@btp.demo';
+update profiles set name = 'Marie Martin', role = 'owner'::user_role where email = 'loueur@btp.demo';
+update profiles set name = 'Thomas Leroy', role = 'admin'::user_role where email = 'admin@btp.demo';
+
+-- Rattache les profils de l'annuaire fictif, s'ils existent.
 update profiles set name = 'Jean Dupont', role = 'client'::user_role, status = 'active'::user_status where email = 'jean.dupont@example.com';
 update profiles set name = 'Marie Martin', role = 'owner'::user_role, status = 'active'::user_status where email = 'marie.martin@example.com';
 update profiles set name = 'Paul Bernard', role = 'client'::user_role, status = 'inactive'::user_status where email = 'paul.bernard@example.com';

@@ -124,21 +124,21 @@ export interface DemoAccount {
 export const demoAccounts: DemoAccount[] = [
   {
     email: "client@btp.demo",
-    password: "demo1234",
+    password: "Buildora123",
     name: "Jean Dupont",
     role: "client",
     descriptionKey: "auth.demo.client",
   },
   {
     email: "loueur@btp.demo",
-    password: "demo1234",
+    password: "Buildora123",
     name: "Marie Martin",
     role: "owner",
     descriptionKey: "auth.demo.owner",
   },
   {
     email: "admin@btp.demo",
-    password: "demo1234",
+    password: "Buildora123",
     name: "Thomas Leroy",
     role: "admin",
     descriptionKey: "auth.demo.admin",

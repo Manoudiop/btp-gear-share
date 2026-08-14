@@ -32,9 +32,9 @@ ils servent uniquement à explorer les trois espaces.
 
 | Email | Mot de passe | Espace |
 | --- | --- | --- |
-| `client@btp.demo` | `demo1234` | Client — commandes, historique |
-| `loueur@btp.demo` | `demo1234` | Loueur — parc, locations, revenus, stats |
-| `admin@btp.demo` | `demo1234` | Administration — utilisateurs, annonces, matériaux |
+| `client@btp.demo` | `Buildora123` | Client — commandes, historique |
+| `loueur@btp.demo` | `Buildora123` | Loueur — parc, locations, revenus, stats |
+| `admin@btp.demo` | `Buildora123` | Administration — utilisateurs, annonces, matériaux |
 
 Le formulaire de connexion propose ces comptes en un clic.
 

@@ -78,7 +78,17 @@ const main = async () => {
   // par la migration 0003 : le fichier peut être rejoué sans dupliquer.
   push("begin;");
   push();
-  push("-- Rattache les profils aux comptes créés dans l'authentification.");
+  push("-- Nomme les comptes de démonstration : le déclencheur ne dispose que de");
+  push("-- l'email à l'inscription et en déduit un nom peu présentable.");
+  demoAccounts.forEach((account) => {
+    push(
+      `update profiles set name = ${quote(account.name)}, role = ${quote(account.role)}::user_role ` +
+        `where email = ${quote(account.email)};`,
+    );
+  });
+  push();
+
+  push("-- Rattache les profils de l'annuaire fictif, s'ils existent.");
   users.forEach((user) => {
     push(
       `update profiles set name = ${quote(user.name)}, role = ${quote(user.role)}::user_role, ` +

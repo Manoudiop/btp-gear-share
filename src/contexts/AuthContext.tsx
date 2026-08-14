@@ -153,14 +153,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return {};
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
-      return error ? { error: "auth.badCredentials" } : {};
+      if (error) return { error: "auth.badCredentials" };
+
+      // Le profil doit être chargé avant de rendre la main : sinon l'appelant
+      // navigue vers une page privée pendant que `user` est encore nul, et
+      // PrivateRoute le renvoie aussitôt vers /login.
+      await loadProfile(data.session);
+      return {};
     },
-    [],
+    [loadProfile],
   );
 
   const signUp = useCallback(async (input: SignUpInput): Promise<{ error?: string }> => {
@@ -177,15 +183,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return {};
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: input.email.trim(),
       password: input.password,
       // Reprises par le déclencheur `handle_new_user`, qui borne le rôle.
       options: { data: { name: input.name, role: input.role } },
     });
 
-    return error ? { error: error.message } : {};
-  }, []);
+    if (error) return { error: error.message };
+
+    // Null quand la confirmation par email est exigée : l'appelant reste alors
+    // sur place, sans session.
+    if (data.session) await loadProfile(data.session);
+    return {};
+  }, [loadProfile]);
 
   const logout = useCallback(async () => {
     if (supabase) {
