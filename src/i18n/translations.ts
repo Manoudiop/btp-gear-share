@@ -1129,6 +1129,21 @@ export const translations: Record<string, Record<Language, string>> = {
   },
   "equipment.similar": { fr: "Équipements similaires", en: "Similar equipment" },
   "equipment.bookingSent": { fr: "Réservation en cours", en: "Booking in progress" },
+  "add.created": { fr: "Annonce déposée", en: "Listing submitted" },
+  "add.createdDesc": {
+    fr: "Elle sera visible dans le catalogue après validation.",
+    en: "It will appear in the catalogue once approved.",
+  },
+  "add.failed": {
+    fr: "L'annonce n'a pas pu être déposée. Réessayez.",
+    en: "The listing could not be submitted. Please try again.",
+  },
+  "add.addPhotos": { fr: "Ajouter des photos", en: "Add photos" },
+  "add.mainPhoto": { fr: "Photo principale", en: "Main photo" },
+  "owner.failed": {
+    fr: "La candidature n'a pas pu être envoyée. Réessayez.",
+    en: "The application could not be sent. Please try again.",
+  },
   "contact.failed": {
     fr: "Le message n'a pas pu être envoyé. Réessayez.",
     en: "The message could not be sent. Please try again.",

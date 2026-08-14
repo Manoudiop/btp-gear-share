@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useSendOwnerApplication } from "@/data/requests";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +43,7 @@ const BecomeOwner = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const sendApplication = useSendOwnerApplication();
   const navigate = useNavigate();
   const { t } = useLanguage();
   const formSchema = useMemo(() => createFormSchema(t), [t]);
@@ -66,8 +68,18 @@ const BecomeOwner = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await sendApplication.mutateAsync({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        company: data.company,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        city: data.city,
+        postalCode: data.postalCode,
+        equipmentTypes: data.equipmentTypes,
+        description: data.description,
+      });
 
       toast({
         title: t("owner.toastTitle"),
@@ -77,6 +89,9 @@ const BecomeOwner = () => {
       // L'écran de confirmation remplace la redirection automatique : l'utilisateur
       // a le temps de lire la suite du processus avant de quitter la page.
       setStep(3);
+    } catch {
+      // La candidature reste saisie : elle peut être renvoyée telle quelle.
+      toast({ title: t("owner.failed"), variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }

@@ -85,3 +85,44 @@ export const useSendQuote = () =>
       if (error) throw error;
     },
   });
+
+export interface OwnerApplicationInput {
+  firstName: string;
+  lastName: string;
+  company?: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  equipmentTypes: string;
+  description?: string;
+}
+
+export const useSendOwnerApplication = () =>
+  useMutation({
+    mutationFn: async (input: OwnerApplicationInput) => {
+      if (!isSupabaseConfigured) {
+        throw new Error("Supabase n'est pas configuré : envoi impossible.");
+      }
+
+      const supabase = requireSupabase();
+      const { data: session } = await supabase.auth.getUser();
+
+      const { error } = await supabase.from("owner_applications").insert({
+        user_id: session.user?.id ?? null,
+        first_name: input.firstName,
+        last_name: input.lastName,
+        company: input.company || null,
+        email: input.email,
+        phone: input.phone,
+        address: input.address,
+        city: input.city,
+        postal_code: input.postalCode,
+        equipment_types: input.equipmentTypes,
+        description: input.description || null,
+      });
+
+      if (error) throw error;
+    },
+  });

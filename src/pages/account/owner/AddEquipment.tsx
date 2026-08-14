@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ImagePlus, Upload, Check, X, Info, MapPin, 
@@ -28,6 +28,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+import { useCreateEquipment } from "@/data/equipmentMutations";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const categories = [
@@ -45,6 +46,9 @@ const AddEquipment = () => {
   const { t, currencySymbol } = useLanguage();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const photoInput = useRef<HTMLInputElement>(null);
+  const createEquipment = useCreateEquipment();
   const [equipmentData, setEquipmentData] = useState({
     name: "",
     description: "",
@@ -81,19 +85,41 @@ const AddEquipment = () => {
     });
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      await createEquipment.mutateAsync({
+        name: equipmentData.name,
+        description: equipmentData.description,
+        category: equipmentData.category,
+        pricePerDay: Number(equipmentData.price),
+        deposit: Number(equipmentData.deposit || 0),
+        location: equipmentData.location,
+        minRentalDays: Number(equipmentData.minRentalDays || 1),
+        available: equipmentData.available,
+        photos,
+      });
+
       toast({
-        title: "Équipement ajouté",
-        description: "Votre équipement a été ajouté avec succès.",
+        title: t("add.created"),
+        description: t("add.createdDesc"),
       });
       navigate("/account/equipment");
-    }, 1500);
+    } catch {
+      // La saisie reste à l'écran : une fiche d'annonce ne se retape pas.
+      toast({ title: t("add.failed"), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhotos([...photos, ...Array.from(e.target.files ?? [])]);
+    // Remet l'entrée à zéro : sans cela, choisir deux fois le même fichier
+    // ne déclenche aucun événement.
+    e.target.value = "";
   };
 
   return (
@@ -305,11 +331,56 @@ const AddEquipment = () => {
                   <p className="text-xs text-muted-foreground">
                     PNG, JPG ou WEBP. 5 MB max.
                   </p>
-                  <Button variant="secondary" size="sm" className="mt-4">
+                  <input
+                    ref={photoInput}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    multiple
+                    className="hidden"
+                    onChange={handlePhotos}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => photoInput.current?.click()}
+                  >
                     <Upload className="mr-2 h-4 w-4" />
-                    Ajouter des photos
+                    {t("add.addPhotos")}
                   </Button>
                 </div>
+
+                {photos.length > 0 && (
+                  <ul className="space-y-2">
+                    {photos.map((photo, index) => (
+                      <li
+                        key={`${photo.name}-${index}`}
+                        className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
+                      >
+                        <span className="truncate">{photo.name}</span>
+                        <div className="flex shrink-0 items-center gap-2">
+                          {index === 0 && (
+                            <span className="text-xs text-muted-foreground">
+                              {t("add.mainPhoto")}
+                            </span>
+                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() =>
+                              setPhotos(photos.filter((_, i) => i !== index))
+                            }
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </CardContent>
             </Card>
             
