@@ -71,6 +71,7 @@ const AccountLayout = ({ title, children }: AccountLayoutProps) => {
   // les liens vers des routes d'un autre rôle renvoyaient l'utilisateur sur /account.
   const clientNavItems = [
     { href: "/account", icon: <LayoutDashboard size={18} />, label: t("account.dashboard") },
+    { href: "/account/bookings", icon: <Building size={18} />, label: t("account.bookings") },
     { href: "/account/orders", icon: <ShoppingCart size={18} />, label: t("account.orders") },
     { href: "/account/history", icon: <History size={18} />, label: t("account.history") },
     { href: "/account/settings", icon: <Settings size={18} />, label: t("account.settings") },

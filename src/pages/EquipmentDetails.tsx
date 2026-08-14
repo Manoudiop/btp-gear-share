@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, Star, MapPin, Calendar, Truck, Shield, ThumbsUp, MessageSquare, Clock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,12 +16,18 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { useEquipmentDetail, useSimilarEquipment } from "@/data/queries";
+import { useCreateBooking } from "@/data/bookings";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { categoryLabel } from "@/data/categoryIcons";
 import Seo from "@/components/Seo";
 
 const EquipmentDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+  const createBooking = useCreateBooking();
   const { t, formatPrice, locale } = useLanguage();
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
@@ -56,28 +62,56 @@ const EquipmentDetails = () => {
   }
 
   const handleDateSelection = (date: string) => {
-    if (selectedDates.includes(date)) {
-      setSelectedDates(selectedDates.filter(d => d !== date));
-    } else {
-      setSelectedDates([...selectedDates, date]);
-    }
+    // Forme fonctionnelle : lire `selectedDates` par fermeture perdait les
+    // sélections rapprochées, plusieurs clics partageant le même état.
+    setSelectedDates((previous) =>
+      previous.includes(date)
+        ? previous.filter((day) => day !== date)
+        : [...previous, date],
+    );
   };
 
-  const handleRent = () => {
+  const handleRent = async () => {
     if (selectedDates.length === 0) {
       toast({
         title: "Erreur",
         description: t("equipment.selectDateError"),
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: t("equipment.bookingSent"),
-      description: t("equipment.bookingSentDesc", { count: selectedDates.length }),
-    });
-    setIsBookingDialogOpen(false);
+    // Réserver engage l'utilisateur : la connexion est exigée, et la page
+    // demandée est mémorisée pour y revenir après.
+    if (!isAuthenticated) {
+      toast({ description: t("equipment.loginToBook") });
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
+    try {
+      const booking = await createBooking.mutateAsync({
+        equipmentId: equipment.id,
+        dates: selectedDates,
+        pricePerDay: equipment.price,
+        deposit: equipment.deposit,
+      });
+
+      toast({
+        title: t("equipment.bookingSent"),
+        description: t("equipment.bookingSentDesc", {
+          reference: booking.reference,
+          count: booking.days,
+        }),
+      });
+      setSelectedDates([]);
+      setIsBookingDialogOpen(false);
+    } catch {
+      toast({
+        title: t("equipment.bookingError"),
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -209,12 +243,15 @@ const EquipmentDetails = () => {
                           <span>{formatPrice(selectedDates.length * equipment.price)}</span>
                         </div>
                       </div>
-                      <Button 
-                        className="w-full mt-6" 
+                      <Button
+                        className="w-full mt-6"
                         size="lg"
                         onClick={handleRent}
+                        disabled={createBooking.isPending}
                       >
-                        {t("equipment.confirmBooking")}
+                        {createBooking.isPending
+                          ? t("equipment.bookingPending")
+                          : t("equipment.confirmBooking")}
                       </Button>
                     </div>
                   </DialogContent>

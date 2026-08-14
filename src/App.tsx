@@ -36,6 +36,7 @@ const AccountSettings = lazy(() => import("./pages/account/AccountSettings"));
 
 // Espace client
 const Orders = lazy(() => import("./pages/account/client/Orders"));
+const Bookings = lazy(() => import("./pages/account/client/Bookings"));
 const OrderDetails = lazy(() => import("./pages/account/client/OrderDetails"));
 const History = lazy(() => import("./pages/account/client/History"));
 
@@ -142,6 +143,7 @@ const App = () => (
                   </Route>
 
                   <Route element={<PrivateRoute allowedRoles={["client"]} />}>
+                    <Route path="/account/bookings" element={<Bookings />} />
                     <Route path="/account/orders" element={<Orders />} />
                     <Route path="/account/orders/:id" element={<OrderDetails />} />
                     <Route path="/account/history" element={<History />} />
