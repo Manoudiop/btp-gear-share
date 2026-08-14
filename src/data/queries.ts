@@ -21,11 +21,10 @@ const EQUIPMENT_LIST_COLUMNS =
 
 const EQUIPMENT_DETAIL_COLUMNS = `
   id, name, description, category, price_per_day, deposit, location, image_url,
-  features, insurance, specifications, availability, rating, response_time,
-  owner:profiles!equipment_owner_id_fkey (name),
+  features, insurance, specifications, availability, rating, response_time, owner_name,
   equipment_availability (day),
-  reviews (id, rating, comment, created_at, author:profiles (name)),
-  questions (id, question, answer, created_at, author:profiles (name))
+  reviews (id, rating, comment, created_at, author_name),
+  questions (id, question, answer, created_at, author_name)
 `;
 
 const MATERIAL_LIST_COLUMNS =
@@ -35,7 +34,7 @@ const MATERIAL_DETAIL_COLUMNS = `
   id, name, description, category, price, unit, min_order, max_order, stock,
   supplier_name, location, image_url, features, specifications, is_available, rating,
   delivery_options (type, delay, price),
-  reviews (id, rating, comment, created_at, author:profiles (name))
+  reviews (id, rating, comment, created_at, author_name)
 `;
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- lignes brutes de PostgREST */
@@ -53,7 +52,7 @@ const toEquipment = (row: Row): Equipment => ({
   deposit: Number(row.deposit ?? 0),
   rating: Number(row.rating ?? 0),
   location: row.location,
-  owner: row.owner?.name ?? "",
+  owner: row.owner_name ?? "",
   // Absente du schéma : la note du loueur viendra avec ses propres avis.
   ownerRating: Number(row.rating ?? 0),
   ownerResponseTime: row.response_time ?? "",
@@ -66,7 +65,7 @@ const toEquipment = (row: Row): Equipment => ({
     .sort(),
   reviews: (row.reviews ?? []).map((review: Row) => ({
     id: review.id,
-    author: review.author?.name ?? "",
+    author: review.author_name ?? "",
     rating: review.rating,
     date: frenchDate(review.created_at),
     comment: review.comment,
@@ -76,7 +75,7 @@ const toEquipment = (row: Row): Equipment => ({
     question: question.question,
     answer: question.answer ?? "",
     date: frenchDate(question.created_at),
-    author: question.author?.name ?? "",
+    author: question.author_name ?? "",
   })),
   insurance: row.insurance ?? [],
 });
@@ -106,7 +105,7 @@ const toMaterial = (row: Row): Material => ({
   })),
   reviews: (row.reviews ?? []).map((review: Row) => ({
     id: review.id,
-    author: review.author?.name ?? "",
+    author: review.author_name ?? "",
     rating: review.rating,
     date: frenchDate(review.created_at),
     comment: review.comment,
