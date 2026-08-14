@@ -21,12 +21,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { phoneField } from "@/lib/phone";
 
 const createPersonalSchema = (t: (key: string) => string) =>
   z.object({
     fullName: z.string().min(2, { message: t("quote.error.fullName") }),
     email: z.string().email({ message: t("auth.error.email") }),
-    phone: z.string().min(10, { message: t("quote.error.phone") }),
+    phone: phoneField(t("quote.error.phone")),
     company: z.string().optional(),
   });
 

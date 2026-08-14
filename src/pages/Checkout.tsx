@@ -24,6 +24,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePlaceOrder } from "@/data/orders";
+import { phoneField } from "@/lib/phone";
 import Seo from "@/components/Seo";
 
 const deliveryOptions = [
@@ -43,11 +44,14 @@ const createCheckoutSchema = (t: (key: string) => string) =>
   z.object({
     name: z.string().min(2, t("checkout.error.name")),
     street: z.string().min(5, t("checkout.error.street")),
-    postalCode: z.string().regex(/^\d{5}$/, t("checkout.error.postalCode")),
-    city: z.string().min(2, t("checkout.error.city")),
-    phone: z
+    // Chiffres, lettres et espaces : les codes postaux ne se ressemblent pas
+    // d'un pays à l'autre, et cinq chiffres ne valent que pour quelques-uns.
+    postalCode: z
       .string()
-      .regex(/^(?:\+33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/, t("checkout.error.phone")),
+      .trim()
+      .regex(/^[A-Za-z0-9][A-Za-z0-9\s-]{1,9}$/, t("checkout.error.postalCode")),
+    city: z.string().min(2, t("checkout.error.city")),
+    phone: phoneField(t("checkout.error.phone")),
     notes: z.string().max(500, t("checkout.error.notes")).optional(),
   });
 

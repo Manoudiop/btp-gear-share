@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSendOwnerApplication } from "@/data/requests";
+import { phoneField } from "@/lib/phone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,10 +30,10 @@ const createFormSchema = (t: (key: string) => string) =>
     lastName: z.string().min(2, t("owner.error.lastName")),
     company: z.string().optional(),
     email: z.string().email(t("auth.error.email")),
-    phone: z.string().min(10, t("owner.error.phone")),
+    phone: phoneField(t("owner.error.phone")),
     address: z.string().min(5, t("owner.error.address")),
     city: z.string().min(2, t("owner.error.city")),
-    postalCode: z.string().min(5, t("owner.error.postalCode")),
+    postalCode: z.string().min(2, t("owner.error.postalCode")),
     description: z.string().optional(),
     equipmentTypes: z.string().min(1, t("owner.error.equipmentTypes")),
   });

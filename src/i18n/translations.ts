@@ -430,7 +430,10 @@ export const translations: Record<string, Record<Language, string>> = {
     fr: "Le nom doit contenir au moins 2 caractères",
     en: "Last name must be at least 2 characters",
   },
-  "owner.error.phone": { fr: "Numéro de téléphone invalide", en: "Invalid phone number" },
+  "owner.error.phone": {
+    fr: "Numéro invalide. Indicatif accepté, ex. +221 77 000 11 22.",
+    en: "Invalid number. Country code accepted, e.g. +221 77 000 11 22.",
+  },
   "owner.error.address": { fr: "Adresse invalide", en: "Invalid address" },
   "owner.error.city": { fr: "Ville invalide", en: "Invalid city" },
   "owner.error.postalCode": { fr: "Code postal invalide", en: "Invalid postcode" },
@@ -586,7 +589,10 @@ export const translations: Record<string, Record<Language, string>> = {
   "quote.company": { fr: "Entreprise (facultatif)", en: "Company (optional)" },
   "quote.companyPlaceholder": { fr: "Nom de votre entreprise", en: "Your company name" },
   "quote.error.fullName": { fr: "Le nom est requis", en: "Name is required" },
-  "quote.error.phone": { fr: "Numéro de téléphone invalide", en: "Invalid phone number" },
+  "quote.error.phone": {
+    fr: "Numéro invalide. Indicatif accepté, ex. +221 77 000 11 22.",
+    en: "Invalid number. Country code accepted, e.g. +221 77 000 11 22.",
+  },
   "quote.continue": { fr: "Continuer", en: "Continue" },
   "quote.previous": { fr: "Précédent", en: "Back" },
 
@@ -1349,12 +1355,12 @@ export const translations: Record<string, Record<Language, string>> = {
   },
   "checkout.error.name": { fr: "Indiquez le nom du destinataire", en: "Enter the recipient's name" },
   "checkout.error.street": { fr: "Indiquez l'adresse du chantier", en: "Enter the site address" },
-  "checkout.error.postalCode": {
-    fr: "Code postal invalide (5 chiffres)",
-    en: "Invalid postcode (5 digits)",
-  },
+  "checkout.error.postalCode": { fr: "Code postal invalide", en: "Invalid postcode" },
   "checkout.error.city": { fr: "Indiquez la ville", en: "Enter the city" },
-  "checkout.error.phone": { fr: "Numéro de téléphone invalide", en: "Invalid phone number" },
+  "checkout.error.phone": {
+    fr: "Numéro invalide. Indicatif accepté, ex. +221 77 000 11 22.",
+    en: "Invalid number. Country code accepted, e.g. +221 77 000 11 22.",
+  },
   "checkout.error.notes": { fr: "500 caractères maximum", en: "500 characters maximum" },
 
   // -------------------------------------------------------------- Confirmation
