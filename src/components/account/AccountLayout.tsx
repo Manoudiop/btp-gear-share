@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   History,
   Users,
+  Inbox,
   Building,
   Briefcase,
   BarChart3,
@@ -89,6 +90,7 @@ const AccountLayout = ({ title, children }: AccountLayoutProps) => {
   const adminNavItems = [
     { href: "/account", icon: <LayoutDashboard size={18} />, label: t("account.dashboard") },
     { href: "/account/users", icon: <Users size={18} />, label: t("account.users") },
+    { href: "/account/requests", icon: <Inbox size={18} />, label: t("account.requests") },
     {
       href: "/account/admin/equipment",
       icon: <Package size={18} />,

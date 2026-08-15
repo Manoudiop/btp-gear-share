@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isSupabaseConfigured, requireSupabase } from "@/lib/supabase";
 
 /**
@@ -126,3 +126,144 @@ export const useSendOwnerApplication = () =>
       if (error) throw error;
     },
   });
+
+// ------------------------------------------------------------------- Lecture
+//
+// Ces demandes étaient écrites sans que rien ne les affiche : l'administration
+// devait ouvrir la base pour savoir qu'elle en avait reçu. Les règles limitent
+// déjà la lecture à l'administration ; c'est elle seule qui verra ces écrans.
+
+export interface ContactMessage extends ContactMessageInput {
+  id: string;
+  handled: boolean;
+  createdAt: string;
+}
+
+export interface Quote extends QuoteInput {
+  id: string;
+  handled: boolean;
+  createdAt: string;
+}
+
+export interface OwnerApplication extends OwnerApplicationInput {
+  id: string;
+  handled: boolean;
+  createdAt: string;
+}
+
+/** Tables de demandes, seules cibles autorisées du marquage « traité ». */
+export type RequestTable =
+  | "contact_messages"
+  | "quotes"
+  | "owner_applications";
+
+const useRequestList = <TResult>(
+  table: RequestTable,
+  columns: string,
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- ligne brute */
+  map: (row: any) => TResult,
+) =>
+  useQuery({
+    queryKey: ["requests", table],
+    queryFn: async (): Promise<TResult[]> => {
+      if (!isSupabaseConfigured) return [];
+
+      const { data, error } = await requireSupabase()
+        .from(table)
+        .select(columns)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return (data ?? []).map(map);
+    },
+  });
+
+export const useContactMessages = () =>
+  useRequestList<ContactMessage>(
+    "contact_messages",
+    "id, name, email, phone, subject, message, handled, created_at",
+    (row) => ({
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      phone: row.phone ?? undefined,
+      subject: row.subject,
+      message: row.message,
+      handled: row.handled,
+      createdAt: row.created_at,
+    }),
+  );
+
+export const useQuotes = () =>
+  useRequestList<Quote>(
+    "quotes",
+    `id, full_name, email, phone, company, project_type, project_location,
+     project_duration, project_start_date, equipment_types, equipment_duration,
+     equipment_quantity, additional_requirements, handled, created_at`,
+    (row) => ({
+      id: row.id,
+      fullName: row.full_name,
+      email: row.email,
+      phone: row.phone,
+      company: row.company ?? undefined,
+      projectType: row.project_type,
+      projectLocation: row.project_location,
+      projectDuration: row.project_duration,
+      projectStartDate: row.project_start_date ?? undefined,
+      equipmentTypes: row.equipment_types ?? [],
+      equipmentDuration: row.equipment_duration ?? undefined,
+      equipmentQuantity: row.equipment_quantity ?? undefined,
+      additionalRequirements: row.additional_requirements ?? undefined,
+      handled: row.handled,
+      createdAt: row.created_at,
+    }),
+  );
+
+export const useOwnerApplications = () =>
+  useRequestList<OwnerApplication>(
+    "owner_applications",
+    `id, first_name, last_name, company, email, phone, address, city,
+     postal_code, equipment_types, description, handled, created_at`,
+    (row) => ({
+      id: row.id,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      company: row.company ?? undefined,
+      email: row.email,
+      phone: row.phone,
+      address: row.address,
+      city: row.city,
+      postalCode: row.postal_code,
+      equipmentTypes: row.equipment_types,
+      description: row.description ?? undefined,
+      handled: row.handled,
+      createdAt: row.created_at,
+    }),
+  );
+
+/** Marque une demande comme traitée, ou la rouvre. */
+export const useMarkHandled = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      table,
+      id,
+      handled,
+    }: {
+      table: RequestTable;
+      id: string;
+      handled: boolean;
+    }) => {
+      const { error } = await requireSupabase()
+        .from(table)
+        .update({ handled })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["requests"] });
+    },
+  });
+};

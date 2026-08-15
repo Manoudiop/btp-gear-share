@@ -49,6 +49,7 @@ const Income = lazy(() => import("./pages/account/owner/Income"));
 
 // Espace administration
 const UserManagement = lazy(() => import("./pages/account/admin/UserManagement"));
+const Requests = lazy(() => import("./pages/account/admin/Requests"));
 const ManageEquipment = lazy(() => import("./pages/account/admin/ManageEquipment"));
 const ManageMaterials = lazy(() => import("./pages/account/admin/ManageMaterials"));
 
@@ -130,6 +131,7 @@ const App = () => (
 
                   <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
                     <Route path="/account/users" element={<UserManagement />} />
+                    <Route path="/account/requests" element={<Requests />} />
                     <Route path="/account/admin/equipment" element={<ManageEquipment />} />
                     <Route path="/account/materials" element={<ManageMaterials />} />
                   </Route>

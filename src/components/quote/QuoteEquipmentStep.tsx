@@ -21,6 +21,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { EQUIPMENT_TYPES, RENTAL_DURATIONS } from "@/data/quoteOptions";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -40,16 +41,6 @@ const createEquipmentSchema = (t: (key: string) => string) =>
 
 type EquipmentFormValues = z.infer<ReturnType<typeof createEquipmentSchema>>;
 
-const equipmentOptions = [
-  { id: "excavator", labelKey: "category.Pelleteuses" },
-  { id: "truck", labelKey: "category.Camions" },
-  { id: "scaffold", labelKey: "category.Échafaudages" },
-  { id: "breaker", labelKey: "category.Marteaux piqueurs" },
-  { id: "mixer", labelKey: "category.Bétonnières" },
-  { id: "tools", labelKey: "category.Outillage" },
-  { id: "crane", labelKey: "quote.equip.crane" },
-  { id: "compressor", labelKey: "quote.equip.compressor" },
-];
 
 interface QuoteEquipmentStepProps {
   formData: {
@@ -107,7 +98,7 @@ const QuoteEquipmentStep = ({
                   Sélectionnez tous les types d'équipements dont vous avez besoin
                 </FormDescription>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                  {equipmentOptions.map((option) => (
+                  {EQUIPMENT_TYPES.map((option) => (
                     <FormField
                       key={option.id}
                       control={form.control}
@@ -166,11 +157,11 @@ const QuoteEquipmentStep = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="daily">{t("quote.rental.daily")}</SelectItem>
-                      <SelectItem value="weekly">{t("quote.rental.weekly")}</SelectItem>
-                      <SelectItem value="biweekly">{t("quote.rental.biweekly")}</SelectItem>
-                      <SelectItem value="monthly">{t("quote.rental.monthly")}</SelectItem>
-                      <SelectItem value="quarterly">{t("quote.rental.quarterly")}</SelectItem>
+                      {RENTAL_DURATIONS.map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                          {t(option.labelKey)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

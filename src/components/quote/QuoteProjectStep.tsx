@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { PROJECT_DURATIONS, PROJECT_TYPES } from "@/data/quoteOptions";
 import {
   Select,
   SelectContent,
@@ -100,11 +101,11 @@ const QuoteProjectStep = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="construction">{t("quote.type.construction")}</SelectItem>
-                    <SelectItem value="renovation">{t("quote.type.renovation")}</SelectItem>
-                    <SelectItem value="public">{t("quote.type.public")}</SelectItem>
-                    <SelectItem value="industrial">{t("quote.type.industrial")}</SelectItem>
-                    <SelectItem value="other">{t("quote.type.other")}</SelectItem>
+                    {PROJECT_TYPES.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {t(option.labelKey)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -152,12 +153,11 @@ const QuoteProjectStep = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="less-than-1-week">{t("quote.duration.lt1w")}</SelectItem>
-                    <SelectItem value="1-2-weeks">{t("quote.duration.1to2w")}</SelectItem>
-                    <SelectItem value="2-4-weeks">{t("quote.duration.2to4w")}</SelectItem>
-                    <SelectItem value="1-3-months">{t("quote.duration.1to3m")}</SelectItem>
-                    <SelectItem value="3-6-months">{t("quote.duration.3to6m")}</SelectItem>
-                    <SelectItem value="more-than-6-months">{t("quote.duration.gt6m")}</SelectItem>
+                    {PROJECT_DURATIONS.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {t(option.labelKey)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
