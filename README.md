@@ -138,6 +138,7 @@ supabase/
 ├── migrations/0007_candidatures_loueur.sql  Table des candidatures
 ├── migrations/0008_annonces_loueur.sql Durée minimale et dépôt des photos
 ├── migrations/0009_suppression_compte.sql   Suppression de compte
+├── migrations/0010_alerte_demandes.sql Alerte email des demandes entrantes
 └── seed.sql                            Jeu de données initial (généré)
 ```
 
@@ -161,6 +162,28 @@ node scripts/generate-seed.mjs
 4. Exécuter `seed.sql`.
 5. Copier `.env.example` en `.env.local` et y coller l'URL du projet et la clé
    `anon` (**Project Settings → API**).
+
+### Alerter par email
+
+Les demandes entrantes sont consultables dans **Compte → Demandes**. Pour être
+prévenu sans ouvrir l'écran, `0010_alerte_demandes.sql` pose un déclencheur qui
+appelle [Resend](https://resend.com) depuis la base.
+
+L'envoi part de la base et non du navigateur : le client ne détient que la clé
+publique, lui confier l'appel exposerait la clé du fournisseur et laisserait
+n'importe qui déclencher des envois.
+
+```sql
+-- 1. Déposer la clé dans le coffre — jamais dans une table, jamais dans Git.
+select vault.create_secret('re_votre_cle', 'RESEND_API_KEY');
+
+-- 2. Indiquer qui reçoit, puis activer.
+update notification_settings
+set recipient = 'vous@votredomaine.com', enabled = true;
+```
+
+Une alerte qui échoue n'annule jamais la demande qu'elle annonce : le
+déclencheur avale ses propres erreurs et la ligne reste écrite.
 
 ### Ce que la base change
 
@@ -189,9 +212,10 @@ Les règles de `0002_policies.sql` sont appliquées par la base et ne peuvent pa
 - **Aucun paiement.** Le tunnel de commande ne demande aucune coordonnée
   bancaire et n'effectue aucune transaction : la commande est enregistrée, elle
   n'est pas encaissée.
-- **Aucun envoi d'email.** Les messages, devis et candidatures sont bien
-  enregistrés, mais personne n'est prévenu : l'administration doit consulter la
-  base.
+- **L'alerte email demande un fournisseur.** Les demandes entrantes sont
+  visibles dans l'administration sans rien configurer ; l'alerte par email, elle,
+  attend une clé Resend (voir plus bas). Sans clé, rien n'est tenté et les
+  demandes sont enregistrées normalement.
 - Le suivi de livraison est déduit du statut de la commande : seule sa
   confirmation est datée, les étapes suivantes n'ont pas d'horodatage.
 - La vue carte du catalogue d'équipements n'est pas implémentée.
